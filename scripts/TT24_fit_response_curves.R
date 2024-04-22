@@ -12,10 +12,10 @@
 library(tidyverse)
 library(plantecophys)
 
-# Stomatal limitation and Arrhenius function for temp standardizing
-# Vcmax, Jmax, and Rd
-source("../../r_functions/stomatal_limitation.R")
-source("../../r_functions/temp_standardize.R")
+# Load custom functions for cleaning LI-6800 files,
+# standardizing Vcmax/Jmax/Rd to single temperature,
+# and calculating 
+R.utils::sourceDirectory("../functions/")
 
 # Create data frame containing subplots and their treatments for
 # easy merge with photosynthetic trait data
@@ -27,7 +27,13 @@ treatments <- data.frame(subplot = seq(1,36, 1)) %>%
 
 
 #####################################################################
-# Merge cleaned LI-6800 files
+# Clean licor files and put in `cleaned_li6800` subfolder
+#####################################################################
+# clean_licor_files(directory_path = "../data/raw_li6800/",
+#                   write_directory = "../data/cleaned_li6800/")
+
+#####################################################################
+# Merge cleaned LI-6800 files into single file
 #####################################################################
 
 # List and set file names within cleaned_li6800 subfolder
@@ -51,7 +57,7 @@ li6800_merged <- lapply(files, read.csv) %>%
 
 # Write merged LI-6800 file
 # write.csv(li6800_merged, "../data/TT24_li6800_merged.csv", 
-#          row.names = F)
+#           row.names = F)
 
 #####################################################################
 #####################################################################
