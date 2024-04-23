@@ -56,8 +56,8 @@ li6800_merged <- lapply(files, read.csv) %>%
   arrange(machine, date, obs)
 
 # Write merged LI-6800 file
-# write.csv(li6800_merged, "../data/TT24_li6800_merged.csv", 
-#           row.names = F)
+write.csv(li6800_merged, "../data/TT24_li6800_merged.csv", 
+          row.names = F)
 
 #####################################################################
 #####################################################################
