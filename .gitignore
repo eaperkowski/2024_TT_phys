@@ -50,3 +50,8 @@ rsconnect/
 
 # DS_Store (remove DS_Store from mac-based commits)
 *.DS_Store
+
+# Do not write big LI6800 merged .csv file
+data/TT24_li6800_merged.csv
+
+
