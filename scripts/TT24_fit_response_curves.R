@@ -69,8 +69,8 @@ li6800_merged <- lapply(files, read.csv) %>%
   arrange(machine, date, obs)
 
 # Write merged LI-6800 file
-write.csv(li6800_merged, "../data/TT24_li6800_merged.csv", 
-          row.names = F)
+# write.csv(li6800_merged, "../data/TT24_li6800_merged.csv", 
+#           row.names = F)
 
 #####################################################################
 #####################################################################
@@ -977,13 +977,6 @@ plot(tri_1795_114)
 aci_coefs[87,] <- c(id = 1795, spp = "Tri", plot = 5, subplot = 14,
                     julian_date = 114, t(coef(tri_1795_114)))
 
-
-aci_coefs <- read.csv("../data/TT24_photo_traits_working.csv") %>%
-  select(id, spp, plot, subplot, julian_date, Vcmax = vcmax, 
-         Jmax = jmax, Rd = rd) %>%
-  mutate(TPU = NA)
-
-
 # 3
 tri_flag3_114 <- subset(li6800_merged, id == "3" & julian_date == 114) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
@@ -1350,6 +1343,407 @@ aci_coefs[123,] <- c(id = 425, spp = "Tri", plot = 3, subplot = 6,
                      julian_date = 119, t(coef(tri_425_119)))
 
 #####################################################################
+# 4/29/24: plot 5
+#####################################################################
+
+aci_coefs <- read.csv("../data/TT24_photo_traits_working.csv") %>%
+  select(id, spp, plot, subplot, julian_date, Vcmax = vcmax, 
+         Jmax = jmax, Rd = rd) %>%
+  mutate(TPU = NA) %>%
+  slice(1:123)
+
+# 4431
+tri_4431_120 <- subset(li6800_merged, id == "4431" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_4431_119)
+
+aci_coefs[124,] <- c(id = 4431, spp = "Tri", plot = 5, subplot = 23,
+                     julian_date = 120, t(coef(tri_4431_119)))
+
+# 1476
+mai_1476_120 <- subset(li6800_merged, id == "1476" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_1476_120)
+
+aci_coefs[125,] <- c(id = 1476, spp = "Mai", plot = 5, subplot = 23,
+                     julian_date = 120, t(coef(mai_1476_120)))
+
+# 5657
+mai_5657_120 <- subset(li6800_merged, id == "5657" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_5657_120)
+
+aci_coefs[126,] <- c(id = 5657, spp = "Mai", plot = 5, subplot = 23,
+                     julian_date = 120, t(coef(mai_5657_120)))
+
+# 4781
+mai_4781_120 <- subset(li6800_merged, id == "4781" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_4781_120)
+
+aci_coefs[127,] <- c(id = 4781, spp = "Mai", plot = 5, subplot = 23,
+                     julian_date = 120, t(coef(mai_4781_120)))
+
+# 4414
+tri_4781_120 <- subset(li6800_merged, id == "4414" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_4414_120)
+
+aci_coefs[128,] <- c(id = 4414, spp = "Tri", plot = 5, subplot = 22,
+                     julian_date = 120, t(coef(tri_4414_120)))
+
+# 4959
+tri_4959_120 <- subset(li6800_merged, id == "4959" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_4959_120)
+
+aci_coefs[129,] <- c(id = 4959, spp = "Tri", plot = 5, subplot = 22,
+                     julian_date = 120, t(coef(tri_4959_120)))
+
+# 4990
+tri_4990_120 <- subset(li6800_merged, id == "4990" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_4990_120)
+
+aci_coefs[130,] <- c(id = 4990, spp = "Tri", plot = 5, subplot = 22,
+                     julian_date = 120, t(coef(tri_4990_120)))
+
+# 482
+tri_482_120 <- subset(li6800_merged, id == "482" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_482_120)
+
+aci_coefs[131,] <- c(id = 482, spp = "Tri", plot = 5, subplot = 22,
+                     julian_date = 120, t(coef(tri_482_120)))
+
+# 3004
+tri_3004_120 <- subset(li6800_merged, id == "3004" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_3004_120)
+
+aci_coefs[132,] <- c(id = 3004, spp = "Tri", plot = 5, subplot = 21,
+                     julian_date = 120, t(coef(tri_3004_120)))
+
+# 5229
+tri_5229_120 <- subset(li6800_merged, id == "5229" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_5229_120)
+
+aci_coefs[133,] <- c(id = 5229, spp = "Tri", plot = 5, subplot = 22,
+                     julian_date = 120, t(coef(tri_5229_120)))
+
+# 2508
+tri_2508_120 <- subset(li6800_merged, id == "2508" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_2508_120)
+
+aci_coefs[134,] <- c(id = 2508, spp = "Tri", plot = 5, subplot = 21,
+                     julian_date = 120, t(coef(tri_2508_120)))
+
+# 4576
+tri_4576_120 <- subset(li6800_merged, id == "4576" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_4576_120)
+
+aci_coefs[135,] <- c(id = 4576, spp = "Tri", plot = 5, subplot = 21,
+                     julian_date = 120, t(coef(tri_4576_120)))
+
+# 3077
+tri_3077_120 <- subset(li6800_merged, id == "3077" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_3077_120)
+
+aci_coefs[136,] <- c(id = 3077, spp = "Tri", plot = 5, subplot = 21,
+                     julian_date = 120, t(coef(tri_3077_120)))
+
+# 5052
+mai_5052_120 <- subset(li6800_merged, id == "5052" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_5052_120)
+
+aci_coefs[137,] <- c(id = 5052, spp = "Mai", plot = 5, subplot = 36,
+                     julian_date = 120, t(coef(mai_5052_120)))
+
+# 2637
+mai_2637_120 <- subset(li6800_merged, id == "2637" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_2637_120)
+
+aci_coefs[138,] <- c(id = 2637, spp = "Mai", plot = 5, subplot = 36,
+                     julian_date = 120, t(coef(mai_2637_120)))
+
+# 2616
+mai_2616_120 <- subset(li6800_merged, id == "2616" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_2616_120)
+
+aci_coefs[139,] <- c(id = 2616, spp = "Mai", plot = 5, subplot = 36,
+                     julian_date = 120, t(coef(mai_2616_120)))
+
+# 6888
+tri_6888_120 <- subset(li6800_merged, id == "6888" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_6888_120)
+
+aci_coefs[140,] <- c(id = 6888, spp = "Tri", plot = 5, subplot = 35,
+                     julian_date = 120, t(coef(tri_6888_120)))
+
+# 6875
+tri_6875_120 <- subset(li6800_merged, id == "6875" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_6875_120)
+
+aci_coefs[141,] <- c(id = 6875, spp = "Tri", plot = 5, subplot = 29,
+                     julian_date = 120, t(coef(tri_6875_120)))
+
+# 4444
+tri_4444_120 <- subset(li6800_merged, id == "4444" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_4444_120)
+
+aci_coefs[142,] <- c(id = 4444, spp = "Tri", plot = 5, subplot = 33,
+                     julian_date = 120, t(coef(tri_4444_120)))
+
+# 2988
+tri_2988_120 <- subset(li6800_merged, id == "2988" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_4444_120)
+
+aci_coefs[143,] <- c(id = 2988, spp = "Tri", plot = 5, subplot = 33,
+                     julian_date = 120, t(coef(tri_2988_120)))
+
+# 3829
+tri_3829_120 <- subset(li6800_merged, id == "3829" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_3829_120)
+
+aci_coefs[144,] <- c(id = 3829, spp = "Tri", plot = 5, subplot = 33,
+                     julian_date = 120, t(coef(tri_3829_120)))
+
+# 5877
+tri_5877_120 <- subset(li6800_merged, id == "5877" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_5877_120)
+
+aci_coefs[145,] <- c(id = 5877, spp = "Tri", plot = 5, subplot = 27,
+                     julian_date = 120, t(coef(tri_5877_120)))
+
+# 4109
+tri_4109_120 <- subset(li6800_merged, id == "4109" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_4109_120)
+
+aci_coefs[146,] <- c(id = 4109, spp = "Tri", plot = 5, subplot = 32,
+                     julian_date = 120, t(coef(tri_4109_120)))
+
+# 2573
+tri_2573_120 <- subset(li6800_merged, id == "2573" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_2573_120)
+
+aci_coefs[147,] <- c(id = 2573, spp = "Tri", plot = 5, subplot = 31,
+                     julian_date = 120, t(coef(tri_2573_120)))
+
+
+# 4265
+tri_4265_120 <- subset(li6800_merged, id == "4265" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_4265_120)
+
+aci_coefs[148,] <- c(id = 4265, spp = "Tri", plot = 5, subplot = 31,
+                     julian_date = 120, t(coef(tri_4265_120)))
+
+# 2547
+tri_2547_120 <- subset(li6800_merged, id == "2547" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_2547_120)
+
+aci_coefs[149,] <- c(id = 2547, spp = "Tri", plot = 5, subplot = 19,
+                     julian_date = 120, t(coef(tri_2547_120)))
+
+# 5228
+tri_5228_120 <- subset(li6800_merged, id == "5228" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_5228_120)
+
+aci_coefs[150,] <- c(id = 5228, spp = "Tri", plot = 5, subplot = 19,
+                     julian_date = 120, t(coef(tri_5228_120)))
+
+# 5115
+tri_5115_120 <- subset(li6800_merged, id == "5115" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_5115_120)
+
+aci_coefs[151,] <- c(id = 5115, spp = "Tri", plot = 5, subplot = 19,
+                     julian_date = 120, t(coef(tri_5115_120)))
+
+# 1730
+tri_1730_120 <- subset(li6800_merged, id == "1730" & julian_date == 120) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_1730_120)
+
+aci_coefs[152,] <- c(id = 1730, spp = "Tri", plot = 5, subplot = 19,
+                     julian_date = 120, t(coef(tri_1730_120)))
+
+#####################################################################
+# 5/1/24: plot 6
+#####################################################################
+# 3136
+mai_3136_122 <- subset(li6800_merged, id == "3136" & julian_date == 122) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_3136_122)
+
+aci_coefs[153,] <- c(id = 3136, spp = "Tri", plot = 6, subplot = 32,
+                     julian_date = 122, t(coef(mai_3136_122)))
+
+# 4237
+mai_4237_122 <- subset(li6800_merged, id == "4237" & julian_date == 122) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_4237_122)
+
+aci_coefs[154,] <- c(id = 4237, spp = "Tri", plot = 6, subplot = 32,
+                     julian_date = 122, t(coef(mai_4237_122)))
+
+# 5178
+mai_5178_122 <- subset(li6800_merged, id == "5178" & julian_date == 122) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_5178_122)
+
+aci_coefs[155,] <- c(id = 5178, spp = "Tri", plot = 6, subplot = 32,
+                     julian_date = 122, t(coef(mai_5178_122)))
+
+# 5600
+mai_5600_122 <- subset(li6800_merged, id == "5600" & julian_date == 122) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_5600_122)
+
+aci_coefs[156,] <- c(id = 5600, spp = "Tri", plot = 6, subplot = 32,
+                     julian_date = 122, t(coef(mai_5600_122)))
+
+# 2608
+mai_2608_122 <- subset(li6800_merged, id == "2608" & julian_date == 122) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_2608_122)
+
+aci_coefs[157,] <- c(id = 2608, spp = "Tri", plot = 6, subplot = 25,
+                     julian_date = 122, t(coef(mai_2608_122)))
+
+# 6495
+mai_6495_122 <- subset(li6800_merged, id == "6495" & julian_date == 122) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_6495_122)
+
+aci_coefs[158,] <- c(id = 6495, spp = "Tri", plot = 6, subplot = 25,
+                     julian_date = 122, t(coef(mai_6495_122)))
+
+# 6462
+mai_6462_122 <- subset(li6800_merged, id == "6462" & julian_date == 122) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_6462_122)
+
+aci_coefs[159,] <- c(id = 6462, spp = "Tri", plot = 6, subplot = 36,
+                     julian_date = 122, t(coef(mai_6462_122)))
+
+# 6448
+mai_6448_122 <- subset(li6800_merged, id == "6448" & julian_date == 122) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(mai_6448_122)
+
+aci_coefs[160,] <- c(id = 6448, spp = "Tri", plot = 6, subplot = 36,
+                     julian_date = 122, t(coef(mai_6448_122)))
+
+# 5229
+tri_5229_122 <- subset(li6800_merged, id == "5229" & julian_date == 122) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_5229_122)
+
+aci_coefs[161,] <- c(id = 5229, spp = "Tri", plot = 6, subplot = 1,
+                     julian_date = 122, t(coef(tri_5229_122)))
+
+
+
+
+
+
+
+
+#####################################################################
 # Snapshot measurements (Anet, gsw, Ci:Ca)
 #####################################################################
 snapshot <- li6800_merged %>%
@@ -1362,7 +1756,9 @@ snapshot <- li6800_merged %>%
          iwue = anet / gsw,
          id = ifelse(id == 1 & julian_date == 114, "flag1_tri", id),
          id = ifelse(id == 2 & julian_date == 114, "flag2_tri", id),
-         id = ifelse(id == 3 & julian_date == 114, "flag3_tri", id))
+         id = ifelse(id == 3 & julian_date == 114, "flag3_tri", id),
+         id = ifelse(id == 174 & julian_date == 119, 179, id),
+         )
   
 #####################################################################
 # Compile A/Ci parameter estimates and snapshot measurements
