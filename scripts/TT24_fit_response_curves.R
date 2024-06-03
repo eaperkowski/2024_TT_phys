@@ -17,9 +17,6 @@ library(plantecophys)
 # and calculating 
 R.utils::sourceDirectory("../functions/")
 
-R.utils::sourceDirectory("../functions/")
-source("../functions/clean_licor_files.R")
-
 # Create data frame containing subplots and their treatments for
 # easy merge with photosynthetic trait data
 gm.ambient <- c(4, 5, 6, 10, 11, 12, 16, 17, 18,
@@ -35,9 +32,6 @@ treatments <- data.frame(subplot = seq(1,36, 1)) %>%
 #####################################################################
 # clean_licor_files(directory_path = "../data/raw_li6800/",
 #                   write_directory = "../data/cleaned_li6800/")
-
-clean_licor_file(path = "../data/raw_li6800/2024-05-01_TT24_plot6_oz",
-                 write_to_csv = TRUE, write_to = "../data/cleaned_li6800/")
 
 #####################################################################
 # Merge cleaned LI-6800 files into single file
@@ -1802,18 +1796,6 @@ photo_cleaned_full <- aci_coefs %>%
                 jmax = Jmax, jmax25, rd = Rd, rd25) %>%
   mutate(across(Tleaf:rd25, \(x) round(x, digits = 4))) %>%
   arrange(plot, doy)
-
-
-
-help <- photo_cleaned_full %>%
-  mutate(id = ifelse(id == "fla8", "flag8", id)) %>%
-  group_by(id) %>%
-  summarize(curves = n()) %>%
-  filter(id != 5505)
-  
-
-
-
 
 write.csv(photo_cleaned_full,
           "../data/TT24_photo_traits_working.csv", 
