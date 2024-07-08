@@ -1,0 +1,12 @@
+﻿column_name,description,units
+id,image file name,text
+plot,plot number,unitless
+trt,garlic mustard treatment,text
+spp,species,tri = Trillium; mai = Maianthemum
+rep,replicate number,unitless
+focal,is image focal plant (y/n),text
+allometry_method,method of leaf allometry determination,manual = in-situ measurements with measuring tape; imagej = leaf length determined through imageJ
+total_leaf_area,total leaf area from leaf scans,cm^2
+leaf_length,length of the longest leaf,cm
+stem_length,stem length (only for Mai),cm
+notes,additional information where applicable,text

@@ -7,9 +7,8 @@ library(ggpubr)
 library(LeafArea)
 
 ## Read .csv with leaf length and stem length for easy leaf area merge
-allometry <- read.csv("../data/TT23_nonfocal_allometry.csv",
+allometry <- read.csv("../data/TT24_nonfocal_allometry.csv",
                       na.strings = c("NA", ""))
-
 
 ##############################################################################
 ## Calculate leaf disk area using ImageJ
@@ -24,13 +23,12 @@ leaf_area <- run.ij(path.imagej = ij.path,
                     distance.pixel = 117.906,
                     known.distance = 1, low.size = 0.1,
                     set.memory = 10) %>%
-  separate(sample, c("plot", "trt", "spp", "sample", "rep"))
-
-
-allometry_full <- leaf_area %>%
   separate(sample, c("plot", "trt", "spp", "sample", "rep")) %>%
   mutate(rep = str_pad(rep, 2, pad = "0")) %>%
-  unite("id", plot:rep, remove = FALSE) %>%
+  unite("id", plot:rep, remove = FALSE)
+
+## Merge allometry data set with leaf area
+allometry_full <- leaf_area %>%
   full_join(allometry) %>%
   mutate(plot = gsub("plot", "", plot),
          focal = "n") %>%
@@ -38,5 +36,6 @@ allometry_full <- leaf_area %>%
                 total_leaf_area = total.leaf.area,
                 leaf_length, stem_length, notes)
 
-write.csv(allometry_full, "../data/TT23_nonfocal_allometry_with_leaf_area.csv",
-          row.names = FALSE)
+## Write dataset
+# write.csv(allometry_full, "../data/TT24_nonfocal_allometry_with_leaf_area.csv",
+#           row.names = FALSE)
