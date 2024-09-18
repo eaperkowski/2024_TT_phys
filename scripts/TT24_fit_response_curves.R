@@ -11,6 +11,7 @@
 # Libraries
 library(tidyverse)
 library(plantecophys)
+library(lubridate)
 
 # Load custom functions for cleaning LI-6800 files,
 # standardizing Vcmax/Jmax/Rd to single temperature,
@@ -30,10 +31,8 @@ treatments <- data.frame(subplot = seq(1,36, 1)) %>%
 #####################################################################
 # Clean licor files and put in `cleaned_li6800` subfolder
 #####################################################################
-# clean_licor_files(directory_path = "../data/raw_li6800/",
-#                   write_directory = "../data/cleaned_li6800/")
-
-
+clean_licor_files(directory_path = "../data/raw_li6800/",
+                  write_directory = "../data/cleaned_li6800/")
 
 #####################################################################
 # Merge cleaned LI-6800 files into single file
