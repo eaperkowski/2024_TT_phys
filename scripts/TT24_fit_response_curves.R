@@ -12,6 +12,7 @@
 library(tidyverse)
 library(plantecophys)
 library(lubridate)
+library(purrr)
 
 # Load custom functions for cleaning LI-6800 files,
 # standardizing Vcmax/Jmax/Rd to single temperature,
@@ -45,18 +46,24 @@ files <- list.files(path = "../data/cleaned_li6800",
 files <- setNames(files, stringr::str_extract(basename(files),
                                               ".*(?=\\.csv)"))
 
-# Read all files and merge into central dataframe
+# Read all files and merge into central data frame
 li6800_merged <- lapply(files, read.csv) %>%
   reshape::merge_all() %>%
   mutate(date = lubridate::ymd_hms(date),
-         date_only = stringr::word(date, 1),
-         doy = yday(date_only),
-         Qin_cuvette = 2000,
-         
-         ## Some corrections
-         id = ifelse(id == "striped", "striped1", id),
-         id = ifelse(doy == 114 & id == 1 & 
-                       elapsed > 6840, 2, id),
+         date_only = stringr::word(date, 1)) %>%
+  mutate(date_only = ifelse(date_only == "2021-07-22" | date_only == "2023-06-14", 
+                            "2024-05-01", date_only)) %>%  
+  filter(!is.na(date)) %>%
+  mutate(doy = yday(date_only),
+         Qin_cuvette = 2000) %>% 
+  dplyr::select(obs, time, elapsed, date, date_only, doy, hhmmss:Qin,
+                Qin_cuvette, Qabs:SS_r) %>%
+  arrange(machine, date, obs)
+
+## Stopped here
+li6800_merged <- li6800_merged %>%
+  mutate(## Some corrections
+         id = ifelse(id == "striped", "striped1", id)),
          id = ifelse(doy == 119 & id == 5479 & 
                        elapsed > 4200 & elapsed < 5400, 4942, id),
          id = ifelse(doy == 119 & id == 5479 & 
@@ -73,10 +80,11 @@ li6800_merged <- lapply(files, read.csv) %>%
                        elapsed > 5700, "TT24_102", id),
          id = ifelse(doy == 128 & id == 5567 &
                        elapsed > 9500, 5569, id)) %>%
-  filter(!is.na(id)) %>%
+  filter(!is.na(date)) %>%
   dplyr::select(obs, time, elapsed, date, date_only, doy, hhmmss:Qin,
                 Qin_cuvette, Qabs:SS_r) %>%
   arrange(machine, date, obs)
+
 
 # Write merged LI-6800 file
 write.csv(li6800_merged, "../data/TT24_li6800_merged.csv", 
