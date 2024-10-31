@@ -108,8 +108,6 @@ li6800_merged <- read.csv("../data/TT24_li6800_merged.csv")
 #####################################################################
 # 4/13/24: plot 3
 #####################################################################
-li6800_merged <- read.csv("../data/TT24_li6800_merged.csv")
-
 
 ## 583
 tri_583_104 <- subset(li6800_merged, id == "583" & doy == 104) %>%
@@ -2107,7 +2105,6 @@ write.csv(aci_coefs, "../data/TT24_curve_fits.csv", row.names = F)
 #####################################################################
 # 5/2/24: plot 6
 #####################################################################
-
 # 5579
 mai_5579_123 <- subset(li6800_merged, id == "5579" & doy == 123) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
@@ -2254,7 +2251,6 @@ aci_coefs[191,] <- c(id = "5031", spp = "Tri", plot = 6, subplot = 22,
 #####################################################################
 # 5/6/24: plot 3
 #####################################################################
-
 # 511
 mai_511_127 <- subset(li6800_merged, id == "511" & doy == 127) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
@@ -2813,7 +2809,6 @@ aci_coefs[241,] <- c(id = "4745", spp = "Tri", plot = 6, subplot = 12,
 #####################################################################
 # 5/8/24: plot 5
 #####################################################################
-
 # 4000
 tri_4000_129 <- subset(li6800_merged, id == "4000" & doy == 129) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
@@ -3139,7 +3134,6 @@ aci_coefs[270,] <- c(id = "43", spp = "Tri", plot = 5, subplot = 9,
 #####################################################################
 # 5/14/24: plot 6
 #####################################################################
-
 # 2941
 tri_2941_135 <- subset(li6800_merged, id == "2941" & doy == 135) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
@@ -3212,7 +3206,6 @@ aci_coefs[276, ] <- c(id = "1146", spp = "Mai", plot = 6, subplot = 8,
 #####################################################################
 # 5/16/24: plot 3
 #####################################################################
-
 # 4714
 tri_4714_137 <- subset(li6800_merged, id == "4714" & doy == 137) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
@@ -3546,7 +3539,6 @@ aci_coefs[306, ] <- c(id = "5797", spp = "Tri", plot = 3, subplot = 6,
 #####################################################################
 # 5/20/24: plot 6
 #####################################################################
-
 # 6495
 mai_6495_141 <- subset(li6800_merged, id == "6495" & doy == 141) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
@@ -3943,6 +3935,28 @@ plot(tri_striped2_141)
 aci_coefs[342, ] <- c(id = "striped2", spp = "Tri", plot = 6, subplot = 5,
                       doy = 141, t(coef(tri_striped2_141)),
                       leaf_length_cm = 15.0, stem_length_cm = NA)
+
+#####################################################################
+# 5/21/24: plot 5
+#####################################################################
+unique(subset(li6800_merged, doy == 142)$id)
+
+# 6495
+mai_6495_142 <- subset(li6800_merged, id == "" & doy == 142) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[343, ] <- c(id = "", spp = "", plot = 5, subplot = ,
+                      doy = 142, t(coef()),
+                      leaf_length_cm = , stem_length_cm = )
+
+
+
+
+
+
 
 #####################################################################
 # Snapshot measurements (Anet, gsw, Ci:Ca)
