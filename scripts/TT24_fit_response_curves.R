@@ -36,8 +36,6 @@ treatments <- data.frame(subplot = seq(1,36, 1)) %>%
 #####################################################################
 # Merge cleaned LI-6800 files into single file
 #####################################################################
-
-
 # List and set file names within cleaned_li6800 subfolder
 files <- list.files(path = "../data/cleaned_li6800",
                     recursive = T,
@@ -61,15 +59,14 @@ li6800_merged <- plyr::rbind.fill(lapply(files, read.csv)) %>%
   arrange(machine, date, obs)
 
 # Write merged LI-6800 file
-# write.csv(li6800_merged, "../data/TT24_li6800_merged.csv", 
-#            row.names = F)
+write.csv(li6800_merged, "../data/TT24_li6800_merged.csv", 
+          row.names = F)
 
 #####################################################################
 #####################################################################
 # Start curve fits
 #####################################################################
 #####################################################################
-
 # Object naming scheme: Species, tag ID, day of year separated by "_"
 
 # Read .csv file that has all curve fits merged to it
@@ -5441,13 +5438,13 @@ aci_coefs[478, ] <- c(id = "1686", spp = "Tri", plot = 3, subplot = 6,
 unique(subset(li6800_merged, doy == 152)$id)
 
 # TT24_161
-mai_TT24_161_152 <- subset(li6800_merged, id == "" & doy == 152) %>%
+mai_TT24_161_152 <- subset(li6800_merged, id == "TT24_161" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_TT24_161_152)
+# plot(mai_TT24_161_152)
 
-aci_coefs[, ] <- c(id = "TT24_161", spp = "Mai", plot = 6, subplot = NA,
+aci_coefs[479, ] <- c(id = "TT24_161", spp = "Mai", plot = 6, subplot = NA,
                       doy = 152, t(coef(mai_TT24_161_152)),
                       leaf_length_cm = 15.0, stem_length_cm = 39.2)
 
@@ -5456,33 +5453,33 @@ mai_6495_152 <- subset(li6800_merged, id == "6495" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_6495_152)
+# plot(mai_6495_152)
 
-aci_coefs[, ] <- c(id = "6495", spp = "Mai", plot = 6, subplot = 25,
-                   doy = 152, t(coef(mai_6495_152)),
-                   leaf_length_cm = 19.9, stem_length_cm = 61.4)
+aci_coefs[480, ] <- c(id = "6495", spp = "Mai", plot = 6, subplot = 25,
+                      doy = 152, t(coef(mai_6495_152)),
+                      leaf_length_cm = 19.9, stem_length_cm = 61.4)
 
 # 2608
 mai_2608_152 <- subset(li6800_merged, id == "2608" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_2608_152)
+# plot(mai_2608_152)
 
-aci_coefs[, ] <- c(id = "2608", spp = "Mai", plot = 6, subplot = 25,
-                   doy = 152, t(coef(mai_2608_152)),
-                   leaf_length_cm = 16.7, stem_length_cm = 45.6)
+aci_coefs[481, ] <- c(id = "2608", spp = "Mai", plot = 6, subplot = 25,
+                      doy = 152, t(coef(mai_2608_152)),
+                      leaf_length_cm = 16.7, stem_length_cm = 45.6)
 
 # 4237
 mai_4237_152 <- subset(li6800_merged, id == "4237" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_4237_152)
+# plot(mai_4237_152)
 
-aci_coefs[, ] <- c(id = "4237", spp = "Mai", plot = 6, subplot = 32,
-                   doy = 152, t(coef(mai_4237_152)),
-                   leaf_length_cm = 10.4, stem_length_cm = 18.8)
+aci_coefs[482, ] <- c(id = "4237", spp = "Mai", plot = 6, subplot = 32,
+                      doy = 152, t(coef(mai_4237_152)),
+                      leaf_length_cm = 10.4, stem_length_cm = 49.6)
 
 # TT24_160
 mai_TT24_160_152 <- subset(li6800_merged, id == "TT24_160" & doy == 152) %>%
@@ -5491,396 +5488,619 @@ mai_TT24_160_152 <- subset(li6800_merged, id == "TT24_160" & doy == 152) %>%
          fitTPU = TRUE, Tcorrect = FALSE)
 plot(mai_TT24_160_152)
 
-aci_coefs[, ] <- c(id = "TT24_160", spp = "Mai", plot = 6, subplot = 32,
-                   doy = 152, t(coef(mai_TT24_160_152)),
-                   leaf_length_cm = 21.1, stem_length_cm = 79.2)
+aci_coefs[483, ] <- c(id = "TT24_160", spp = "Mai", plot = 6, subplot = 32,
+                      doy = 152, t(coef(mai_TT24_160_152)),
+                      leaf_length_cm = 21.1, stem_length_cm = 79.2)
 
 # 5600
 mai_5600_152 <- subset(li6800_merged, id == "5600" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_5600_152)
+# plot(mai_5600_152)
 
-aci_coefs[, ] <- c(id = "5600", spp = Mai, plot = 6, subplot = 32,
-                   doy = 152, t(coef(mai_5600_152)),
-                   leaf_length_cm = 21.1, stem_length_cm = 79.2)
+aci_coefs[484, ] <- c(id = "5600", spp = "Mai", plot = 6, subplot = 32,
+                      doy = 152, t(coef(mai_5600_152)),
+                      leaf_length_cm = 21.1, stem_length_cm = 79.2)
 
 # 5178
 mai_5178_152 <- subset(li6800_merged, id == "5178" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_5178_152)
+# plot(mai_5178_152)
 
-aci_coefs[, ] <- c(id = "5178", spp = "Mai", plot = 6, subplot = 32,
-                   doy = 152, t(coef(mai_5178_152)),
-                   leaf_length_cm = 16.7, stem_length_cm = 58.5)
+aci_coefs[485, ] <- c(id = "5178", spp = "Mai", plot = 6, subplot = 32,
+                      doy = 152, t(coef(mai_5178_152)),
+                      leaf_length_cm = 16.7, stem_length_cm = 58.5)
 
 # 5579
 mai_5579_152 <- subset(li6800_merged, id == "5579" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_5579_152)
+# plot(mai_5579_152)
 
-aci_coefs[, ] <- c(id = "5579", spp = "Mai", plot = 6, subplot = 25,
-                   doy = 152, t(coef(mai_5579_152)),
-                   leaf_length_cm = , stem_length_cm = )
+aci_coefs[486, ] <- c(id = "5579", spp = "Mai", plot = 6, subplot = 25,
+                      doy = 152, t(coef(mai_5579_152)),
+                      leaf_length_cm = , stem_length_cm = )
 
 # 3136
 mai_3136_152 <- subset(li6800_merged, id == "3136" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_3136_152)
+# plot(mai_3136_152)
 
-aci_coefs[, ] <- c(id = "3136", spp = "Mai", plot = 6, subplot = 32,
-                   doy = 152, t(coef(mai_3136_152)),
-                   leaf_length_cm = 11.6, stem_length_cm = 28.3)
+aci_coefs[487, ] <- c(id = "3136", spp = "Mai", plot = 6, subplot = 32,
+                      doy = 152, t(coef(mai_3136_152)),
+                      leaf_length_cm = 11.6, stem_length_cm = 28.3)
 
 # TT24_104
 mai_TT24_104_152 <- subset(li6800_merged, id == "TT24_104" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_TT24_104_152)
+# plot(mai_TT24_104_152)
 
-aci_coefs[, ] <- c(id = "TT24_104", spp = "Mai", plot = 6, subplot = 33,
-                   doy = 152, t(coef(mai_TT24_104_152)),
-                   leaf_length_cm = 19.0, stem_length_cm = 66.3)
+aci_coefs[488, ] <- c(id = "TT24_104", spp = "Mai", plot = 6, subplot = 33,
+                      doy = 152, t(coef(mai_TT24_104_152)),
+                      leaf_length_cm = 19.0, stem_length_cm = 66.3)
 
 # TT24_105
 mai_TT24_105_152 <- subset(li6800_merged, id == "TT24_105" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_TT24_105_152)
+# plot(mai_TT24_105_152)
 
-aci_coefs[, ] <- c(id = "TT24_105", spp = "Mai", plot = 6, subplot = 27,
-                   doy = 152, t(coef(mai_TT24_105_152)),
-                   leaf_length_cm = 17.5, stem_length_cm = 54.3)
+aci_coefs[489, ] <- c(id = "TT24_105", spp = "Mai", plot = 6, subplot = 27,
+                      doy = 152, t(coef(mai_TT24_105_152)),
+                      leaf_length_cm = 17.5, stem_length_cm = 54.3)
 
 # 5060
 tri_5060_152 <- subset(li6800_merged, id == "5060" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_5060_152)
+# plot(tri_5060_152)
 
-aci_coefs[, ] <- c(id = "5060", spp = "Tri", plot = 6, subplot = 27,
-                   doy = 152, t(coef(tri_5060_152)),
-                   leaf_length_cm = 16.5, stem_length_cm = NA)
+aci_coefs[490, ] <- c(id = "5060", spp = "Tri", plot = 6, subplot = 27,
+                      doy = 152, t(coef(tri_5060_152)),
+                      leaf_length_cm = 16.5, stem_length_cm = NA)
 
 # TT24_205
 mai_TT24_205_152 <- subset(li6800_merged, id == "TT24_205" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_TT24_205_152)
+# plot(mai_TT24_205_152)
 
-aci_coefs[, ] <- c(id = "TT24_205", spp = "Mai", plot = 6, subplot = 34,
-                   doy = 152, t(coef(mai_TT24_205_152)),
-                   leaf_length_cm = 17.7, stem_length_cm = 55.7)
+aci_coefs[491, ] <- c(id = "TT24_205", spp = "Mai", plot = 6, subplot = 34,
+                      doy = 152, t(coef(mai_TT24_205_152)),
+                      leaf_length_cm = 17.7, stem_length_cm = 55.7)
 
 # TT24_233
 mai_TT24_233_152 <- subset(li6800_merged, id == "TT24_233" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_TT24_233_152)
+# plot(mai_TT24_233_152)
 
-aci_coefs[, ] <- c(id = "TT24_233", spp = "Mai", plot = 6, subplot = 36,
-                   doy = 152, t(coef(mai_TT24_233_152)),
-                   leaf_length_cm = 11.7, stem_length_cm = 27.9)
+aci_coefs[492, ] <- c(id = "TT24_233", spp = "Mai", plot = 6, subplot = 36,
+                      doy = 152, t(coef(mai_TT24_233_152)),
+                      leaf_length_cm = 11.7, stem_length_cm = 27.9)
 
 # 6462
 mai_6462_152 <- subset(li6800_merged, id == "6462" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_6462_152)
+# plot(mai_6462_152)
 
-aci_coefs[, ] <- c(id = "6462", spp = "Mai", plot = 6, subplot = 36,
-                   doy = 152, t(coef(mai_6462_152)),
-                   leaf_length_cm = 16.0, stem_length_cm = 55.3)
+aci_coefs[493, ] <- c(id = "6462", spp = "Mai", plot = 6, subplot = 36,
+                      doy = 152, t(coef(mai_6462_152)),
+                      leaf_length_cm = 16.0, stem_length_cm = 55.3)
 
 # 6448
 mai_6448_152 <- subset(li6800_merged, id == "6448" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_6448_152)
+# plot(mai_6448_152)
 
-aci_coefs[, ] <- c(id = "6448", spp = "Mai", plot = 6, subplot = 36,
-                   doy = 152, t(coef(mai_6448_152)),
-                   leaf_length_cm = 17.0, stem_length_cm = 55.4)
+aci_coefs[494, ] <- c(id = "6448", spp = "Mai", plot = 6, subplot = 36,
+                      doy = 152, t(coef(mai_6448_152)),
+                      leaf_length_cm = 17.0, stem_length_cm = 55.4)
 
 # 5504
-mai_5504_152 <- subset(li6800_merged, id == "5504" & doy == 152) %>%
+mai_5504_152 <- subset(li6800_merged, id == "5504" & doy == 152 & (Ci < 200 | Ci > 300)) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_5504_152)
+# plot(mai_5504_152)
 
-aci_coefs[, ] <- c(id = "5504", spp = "Mai", plot = 6, subplot =36 ,
-                   doy = 152, t(coef(mai_5504_152)),
-                   leaf_length_cm = 10.2, stem_length_cm = 21.6)
+aci_coefs[495, ] <- c(id = "5504", spp = "Mai", plot = 6, subplot =36 ,
+                      doy = 152, t(coef(mai_5504_152)),
+                      leaf_length_cm = 10.2, stem_length_cm = 21.6)
 
 # 2743
 mai_2743_152 <- subset(li6800_merged, id == "2743" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_2743_152)
+# plot(mai_2743_152)
 
-aci_coefs[, ] <- c(id = "2743", spp = "Mai", plot = 6, subplot = 36,
-                   doy = 152, t(coef(mai_2743_152)),
-                   leaf_length_cm = 8.7, stem_length_cm = 21.8)
+aci_coefs[496, ] <- c(id = "2743", spp = "Mai", plot = 6, subplot = 36,
+                      doy = 152, t(coef(mai_2743_152)),
+                      leaf_length_cm = 8.7, stem_length_cm = 21.8)
 
 # 1467
 mai_1467_152 <- subset(li6800_merged, id == "1467" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_1467_152)
+# plot(mai_1467_152)
 
-aci_coefs[, ] <- c(id = "1467", spp = "Mai", plot = 6, subplot = 36,
-                   doy = 152, t(coef(mai_1467_152)),
-                   leaf_length_cm = 17.3, stem_length_cm = 59.7)
+aci_coefs[497, ] <- c(id = "1467", spp = "Mai", plot = 6, subplot = 36,
+                      doy = 152, t(coef(mai_1467_152)),
+                      leaf_length_cm = 17.3, stem_length_cm = 59.7)
 
 # 2726
 mai_2726_152 <- subset(li6800_merged, id == "2726" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_2726_152)
+# plot(mai_2726_152)
 
-aci_coefs[, ] <- c(id = "2726", spp = "Mai", plot = 6, subplot = 30,
-                   doy = 152, t(coef(mai_2726_152)),
-                   leaf_length_cm = 13.5, stem_length_cm = 29.4)
+aci_coefs[498, ] <- c(id = "2726", spp = "Mai", plot = 6, subplot = 30,
+                      doy = 152, t(coef(mai_2726_152)),
+                      leaf_length_cm = 13.5, stem_length_cm = 29.4)
 
 # 6879
 tri_6879_152 <- subset(li6800_merged, id == "6879" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_6879_152)
+# plot(tri_6879_152)
 
-aci_coefs[, ] <- c(id = "6879", spp = "Tri", plot = 6, subplot = 36,
-                   doy = 152, t(coef(tri_6879_152)),
-                   leaf_length_cm = 13.1, stem_length_cm = NA)
+aci_coefs[499, ] <- c(id = "6879", spp = "Tri", plot = 6, subplot = 36,
+                      doy = 152, t(coef(tri_6879_152)),
+                      leaf_length_cm = 13.1, stem_length_cm = NA)
 
 # TT24_230
 mai_TT24_230_152 <- subset(li6800_merged, id == "TT24_230" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_TT24_230_152)
+# plot(mai_TT24_230_152)
 
-aci_coefs[, ] <- c(id = "TT24_230", spp = "Mai", plot = 6, subplot = NA,
-                   doy = 152, t(coef(mai_TT24_230_152)),
-                   leaf_length_cm = 14.5, stem_length_cm = 43.0)
+aci_coefs[500, ] <- c(id = "TT24_230", spp = "Mai", plot = 6, subplot = NA,
+                      doy = 152, t(coef(mai_TT24_230_152)),
+                      leaf_length_cm = 14.5, stem_length_cm = 43.0)
 
 # TT24_206
 mai_TT24_206_152 <- subset(li6800_merged, id == "TT24_206" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_TT24_206_152)
+# plot(mai_TT24_206_152)
 
-aci_coefs[, ] <- c(id = "TT24_206", spp = "Mai", plot = 6, subplot = 22,
-                   doy = 152, t(coef(mai_TT24_206_152)),
-                   leaf_length_cm = 13.5, stem_length_cm = 32.7)
+aci_coefs[501, ] <- c(id = "TT24_206", spp = "Mai", plot = 6, subplot = 22,
+                      doy = 152, t(coef(mai_TT24_206_152)),
+                      leaf_length_cm = 13.5, stem_length_cm = 32.7)
 
 # 5567
-mai_5567_152 <- subset(li6800_merged, id == "5567" & doy == 152) %>%
+mai_5567_152 <- subset(li6800_merged, id == "5567" & doy == 152 & Ci < 500) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
 plot(mai_5567_152)
 
-aci_coefs[, ] <- c(id = "5567", spp = "Mai", plot = 6, subplot = 22,
-                   doy = 152, t(coef(mai_5567_152)),
-                   leaf_length_cm = 19.1, stem_length_cm = 57.9)
+aci_coefs[502, ] <- c(id = "5567", spp = "Mai", plot = 6, subplot = 22,
+                      doy = 152, t(coef(mai_5567_152)),
+                      leaf_length_cm = 19.1, stem_length_cm = 57.9)
 
 # 5229
 tri_5229_152 <- subset(li6800_merged, id == "5229" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_5229_152)
+# plot(tri_5229_152)
 
-aci_coefs[, ] <- c(id = "5229", spp = "Tri", plot = 6, subplot = 1,
-                   doy = 152, t(coef(tri_5229_152)),
-                   leaf_length_cm = 16.8, stem_length_cm = NA)
+aci_coefs[503, ] <- c(id = "5229", spp = "Tri", plot = 6, subplot = 1,
+                      doy = 152, t(coef(tri_5229_152)),
+                      leaf_length_cm = 16.8, stem_length_cm = NA)
 
 # 762
 tri_762_152 <- subset(li6800_merged, id == "762" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_762_152)
+# plot(tri_762_152)
 
-aci_coefs[, ] <- c(id = "762", spp = "Tri", plot = 6, subplot = 2,
-                   doy = 152, t(coef(tri_762_152)),
-                   leaf_length_cm = 14.1, stem_length_cm = NA)
+aci_coefs[504, ] <- c(id = "762", spp = "Tri", plot = 6, subplot = 2,
+                      doy = 152, t(coef(tri_762_152)),
+                      leaf_length_cm = 14.1, stem_length_cm = NA)
 
 # 4777
-tri_4777_152 <- subset(li6800_merged, id == "4777" & doy == 152) %>%
+tri_4777_152 <- subset(li6800_merged, id == "4777" & doy == 152 & (A < 2 | A > 5)) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_4777_152)
+# plot(tri_4777_152)
 
-aci_coefs[, ] <- c(id = "4777", spp = "Tri", plot = 6, subplot = 2,
-                   doy = 152, t(coef(tri_4777_152)),
-                   leaf_length_cm = 9.9, stem_length_cm = NA)
+aci_coefs[505, ] <- c(id = "4777", spp = "Tri", plot = 6, subplot = 2,
+                      doy = 152, t(coef(tri_4777_152)),
+                      leaf_length_cm = 9.9, stem_length_cm = NA)
 
 # 4373
 tri_4373_152 <- subset(li6800_merged, id == "4373" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_4373_152)
+# plot(tri_4373_152)
 
-aci_coefs[, ] <- c(id = "4373", spp = "Tri", plot = 6, subplot = 2,
-                   doy = 152, t(coef(tri_4373_152)),
-                   leaf_length_cm = 13.9, stem_length_cm = NA)
+aci_coefs[506, ] <- c(id = "4373", spp = "Tri", plot = 6, subplot = 2,
+                      doy = 152, t(coef(tri_4373_152)),
+                      leaf_length_cm = 13.9, stem_length_cm = NA)
 
 # 5865
 tri_5865_152 <- subset(li6800_merged, id == "5865" & doy == 152) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_5865_152)
+# plot(tri_5865_152)
 
-aci_coefs[, ] <- c(id = "5865", spp = "Tri", plot = 6, subplot = 2,
-                   doy = 152, t(coef(tri_5865_152)),
-                   leaf_length_cm = 12.8, stem_length_cm = NA)
+aci_coefs[507, ] <- c(id = "5865", spp = "Tri", plot = 6, subplot = 2,
+                      doy = 152, t(coef(tri_5865_152)),
+                      leaf_length_cm = 12.8, stem_length_cm = NA)
 
 # 5267
-tri_5267_152 <- subset(li6800_merged, id == "5267" & doy == 152) %>%
+tri_5267_152 <- subset(li6800_merged, id == "5267" & doy == 152 & A > 8.5) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
-         fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_5267_152)
+         fitTPU = TRUE, Tcorrect = FALSE, citransition = 400)
+# plot(tri_5267_152)
 
-aci_coefs[, ] <- c(id = "5267", spp = "Tri", plot = 6, subplot = 2,
-                   doy = 152, t(coef(tri_5267_152)),
-                   leaf_length_cm = 15.3, stem_length_cm = NA)
+aci_coefs[508, ] <- c(id = "5267", spp = "Tri", plot = 6, subplot = 2,
+                      doy = 152, t(coef(tri_5267_152)),
+                      leaf_length_cm = 15.3, stem_length_cm = NA)
 
 # 684
-tri_684_152 <- subset(li6800_merged, id == "684" & doy == 152) %>%
+tri_684_152 <- subset(li6800_merged, id == "684" & doy == 152 & (A < 4 | Ci > 600)) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_684_152)
+# plot(tri_684_152)
 
-aci_coefs[, ] <- c(id = "684", spp = "Tri", plot = 6, subplot = 2,
-                   doy = 152, t(coef(tri_684_152)),
-                   leaf_length_cm = 16.0, stem_length_cm = NA)
+aci_coefs[509, ] <- c(id = "684", spp = "Tri", plot = 6, subplot = 2,
+                      doy = 152, t(coef(tri_684_152)),
+                      leaf_length_cm = 16.0, stem_length_cm = NA)
 
 # TT24_132
-mai_TT24_132_152 <- subset(li6800_merged, id == "TT24_132" & doy == 152) %>%
+mai_TT24_132_152 <- subset(li6800_merged, id == "TT24_132" & doy == 152 & (A < 4 | Ci > 500)) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(mai_TT24_132_152)
+# plot(mai_TT24_132_152)
 
-aci_coefs[, ] <- c(id = "TT24_132", spp = "Mai", plot = 6, subplot = 2,
-                   doy = 152, t(coef(mai_TT24_132_152)),
-                   leaf_length_cm = 12.1, stem_length_cm = 26.2)
+aci_coefs[510, ] <- c(id = "TT24_132", spp = "Mai", plot = 6, subplot = 2,
+                      doy = 152, t(coef(mai_TT24_132_152)),
+                      leaf_length_cm = 12.1, stem_length_cm = 26.2)
 
 # 5742
-tri_5742_152 <- subset(li6800_merged, id == "5742" & doy == 152) %>%
+tri_5742_152 <- subset(li6800_merged, id == "5742" & doy == 152 & (A < 5 | Ci > 500)) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_5742_152)
+# plot(tri_5742_152)
 
-aci_coefs[, ] <- c(id = "5742", spp = "Tri", plot = 6, subplot = 3,
+aci_coefs[511, ] <- c(id = "5742", spp = "Tri", plot = 6, subplot = 3,
                    doy = 152, t(coef(tri_5742_152)),
                    leaf_length_cm = 15.7, stem_length_cm = NA)
 
 # 5641
-tri_5641_152 <- subset(li6800_merged, id == "5641" & doy == 152) %>%
+tri_5641_152 <- subset(li6800_merged, id == "5641" & doy == 152 & (A < 4 | Ci > 600)) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
-         fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_5641_152)
+         fitTPU = TRUE, Tcorrect = FALSE, citransition = 400)
+# plot(tri_5641_152)
 
-aci_coefs[, ] <- c(id = "5641", spp = "Tri", plot = 6, subplot = 4,
+aci_coefs[512, ] <- c(id = "5641", spp = "Tri", plot = 6, subplot = 4,
                    doy = 152, t(coef(tri_5641_152)),
                    leaf_length_cm = 15.5, stem_length_cm = NA)
 
 # 5619
-tri_5619_152 <- subset(li6800_merged, id == "5619" & doy == 152) %>%
+tri_5619_152 <- subset(li6800_merged, id == "5619" & doy == 152 & (A < 4 | Ci > 600)) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
 plot(tri_5619_152)
 
-aci_coefs[, ] <- c(id = "5619", spp = "Tri", plot = 6, subplot = 5,
+aci_coefs[513, ] <- c(id = "5619", spp = "Tri", plot = 6, subplot = 5,
                    doy = 152, t(coef(tri_5619_152)),
                    leaf_length_cm = 13.9, stem_length_cm = NA)
 
 # striped2
-tri_striped2_152 <- subset(li6800_merged, id == "striped2" & doy == 152) %>%
+tri_striped2_152 <- subset(li6800_merged, id == "striped2" & doy == 152 & (A < 4 | Ci > 600)) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
 plot(tri_striped2_152)
 
-aci_coefs[, ] <- c(id = "striped2", spp = "Tri", plot = 6, subplot = 5,
+aci_coefs[514, ] <- c(id = "striped2", spp = "Tri", plot = 6, subplot = 5,
                    doy = 152, t(coef(tri_striped2_152)),
-                   leaf_length_cm = 16.3, stem_length_cm = )
+                   leaf_length_cm = 16.3, stem_length_cm = NA)
 
 # striped1
-tri_striped1_152 <- subset(li6800_merged, id == "striped1" & doy == 152) %>%
+tri_striped1_152 <- subset(li6800_merged, id == "striped1" & doy == 152 & (A < 5 | Ci > 600)) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
 plot(tri_striped1_152)
-
-aci_coefs[, ] <- c(id = "striped1", spp = "Tri", plot = 6, subplot = 5,
+ 
+aci_coefs[515, ] <- c(id = "striped1", spp = "Tri", plot = 6, subplot = 5,
                    doy = 152, t(coef(tri_striped1_152)),
                    leaf_length_cm = 14.9, stem_length_cm = NA)
 
 # 978
-tri_978_152 <- subset(li6800_merged, id == "978" & doy == 152) %>%
+tri_978_152 <- subset(li6800_merged, id == "978" & doy == 152 & A > 5.5) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_978_152)
+# plot(tri_978_152)
 
-aci_coefs[, ] <- c(id = "978", spp = "Tri", plot = 6, subplot = 6,
+aci_coefs[516, ] <- c(id = "978", spp = "Tri", plot = 6, subplot = 6,
                    doy = 152, t(coef(tri_978_152)),
                    leaf_length_cm = 14.6, stem_length_cm = NA)
 
 # 5031
-tri_5031_152 <- subset(li6800_merged, id == "5031" & doy == 152) %>%
+tri_5031_152 <- subset(li6800_merged, id == "5031" & doy == 152 & A > 10) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_5031_152)
+# plot(tri_5031_152)
 
-aci_coefs[, ] <- c(id = "5031", spp = "Tri", plot = 6, subplot = 28,
+aci_coefs[517, ] <- c(id = "5031", spp = "Tri", plot = 6, subplot = 28,
                    doy = 152, t(coef(tri_5031_152)),
                    leaf_length_cm = 14.1, stem_length_cm = NA)
 
 # 2276
-tri_2276_152 <- subset(li6800_merged, id == "2276" & doy == 152) %>%
+tri_2276_152 <- subset(li6800_merged, id == "2276" & doy == 152 & (A < 3 | Ci > 600)) %>%
   fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
                          Ci = "Ci", PPFD = "Qin_cuvette"),
          fitTPU = TRUE, Tcorrect = FALSE)
-plot(tri_2276_152)
+# plot(tri_2276_152)
 
-aci_coefs[, ] <- c(id = "2276", spp = "Tri", plot = 6, subplot = 28,
+aci_coefs[518, ] <- c(id = "2276", spp = "Tri", plot = 6, subplot = 28,
                    doy = 152, t(coef(tri_2276_152)),
                    leaf_length_cm = 13.2, stem_length_cm = NA)
 
+#####################################################################
+# 6/1/24: plot 5 (DOY = 153)
+#####################################################################
+unique(subset(li6800_merged, doy == 153)$id)
 
+# 2573
+tri_2573_153 <- subset(li6800_merged, id == "2573" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot(tri_2573_153)
+
+aci_coefs[490, ] <- c(id = "2573", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef(tri_2573_153)),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 4265
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 3829
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 2988
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 5115
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 4000
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 5229
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 4990
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 3004
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 2508
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 4974
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 4576
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 3077
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 5052
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 2637
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 2616
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 2662
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 4431
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 4414
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
+
+# 4959
+tri_2573_153 <- subset(li6800_merged, id == "" & doy == 153) %>%
+  fitaci(varnames = list(ALEAF = "A", Tleaf = "Tleaf", 
+                         Ci = "Ci", PPFD = "Qin_cuvette"),
+         fitTPU = TRUE, Tcorrect = FALSE)
+plot()
+
+aci_coefs[490, ] <- c(id = "", spp = "Tri", plot = 5, subplot = ,
+                      doy = 153, t(coef()),
+                      leaf_length_cm = , stem_length_cm = NA)
 
 
 #####################################################################
