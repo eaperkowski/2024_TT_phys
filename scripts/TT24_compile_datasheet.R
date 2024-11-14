@@ -40,14 +40,20 @@ weather <- read.csv("../data/TT24_weather_station_data.csv")
 # Get 10-day weather average leading up to each sampling day to 
 # calculate Vcmax25/Jmax25
 #####################################################################
+weather_dailymean <- weather %>%
+  separate(date, into = c("date_only", "time"), sep = " ", remove = F) %>%
+  group_by(date_only, doy) %>%
+  summarize(precip_total = sum(precipitation_mm, na.rm = T),
+            airtemp_mean = mean(air_temperature_c),
+            vaporpressure_mean = mean(vapor_pressure_kpa),
+            atmpressure_mean = mean(atm_pressure_kpa),
+            vpd_mean = mean(vpd_kpa))
+
+moving_average_10 <- function(x, n = 10) {stats::filter(x, rep(1/n, n), sides = 1)}
+
+
+
 climate_10day <- data.frame(doy = unique(aci_coefs$doy))
-
-select_10day_climate <- function(doy) {
-  ten_days <- doy - 10
-  
-  df <- df[]
-}
-
 
 #####################################################################
 # Compile A/Ci parameter estimates and snapshot measurements
