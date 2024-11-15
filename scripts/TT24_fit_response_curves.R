@@ -59,8 +59,8 @@ li6800_merged <- plyr::rbind.fill(lapply(files, read.csv)) %>%
   arrange(machine, date, obs)
 
 # Write merged LI-6800 file
-write.csv(li6800_merged, "../data/TT24_li6800_merged.csv", 
-          row.names = F)
+# write.csv(li6800_merged, "../data/TT24_li6800_merged.csv", 
+#           row.names = F)
 
 #####################################################################
 #####################################################################
@@ -10278,42 +10278,7 @@ snapshot <- li6800_merged %>%
                 ca = Ca, co2_ref = CO2_r, gsw, Tleaf) %>%
   mutate(doy = as.numeric(doy),
          id = as.character(id),
-         ci.ca = ci / ca,
+         ci.ca = ci / co2_ref,
          iwue = anet / gsw,
          id = ifelse(id == "", NA, id)) %>%
   filter(!is.na(id))
-
-#####################################################################
-# Compile A/Ci parameter estimates and snapshot measurements
-#####################################################################
-photo_cleaned_full <- aci_coefs %>%
-  mutate(doy = as.numeric(doy),
-         subplot = as.numeric(subplot),
-         across(Vcmax:TPU, as.numeric)) %>%
-  left_join(treatments, by = c("subplot")) %>%
-  full_join(snapshot, by = c("id", "doy")) %>%
-  mutate(vcmax25 = temp_standardize(estimate = Vcmax,
-                                    estimate.type = "Vcmax",
-                                    standard.to = 25,
-                                    tLeaf = Tleaf,
-                                    tGrow = 20),
-         jmax25 = temp_standardize(estimate = Jmax,
-                                   estimate.type = "Jmax",
-                                   standard.to = 25,
-                                   tLeaf = Tleaf,
-                                   tGrow = 20),
-         rd25 = temp_standardize(estimate = Rd,
-                                 estimate.type = "Rd",
-                                 pft = "C3H",
-                                 standard.to = 25,
-                                 tLeaf = Tleaf,
-                                 tGrow = 20)) %>%
-  dplyr::select(id, machine, doy, spp:subplot, gm.trt, Tleaf,
-                anet, ci.ca, gsw, iwue, vcmax = Vcmax, vcmax25,
-                jmax = Jmax, jmax25, rd = Rd, rd25) %>%
-  mutate(across(Tleaf:rd25, \(x) round(x, digits = 4))) %>%
-  arrange(plot, doy)
-
-write.csv(photo_cleaned_full,
-          "../data/TT24_photo_traits_working.csv", 
-          row.names = F)

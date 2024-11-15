@@ -14,6 +14,7 @@
 library(tidyverse)
 library(plantecophys)
 library(lubridate)
+library(zoo) ## for running mean fxn
 
 # Load custom functions for cleaning LI-6800 files,
 # standardizing Vcmax/Jmax/Rd to single temperature,
@@ -49,52 +50,60 @@ weather_dailymean <- weather %>%
             atmpressure_mean = mean(atm_pressure_kpa),
             vpd_mean = mean(vpd_kpa))
 
-moving_average_10 <- function(x, n = 10) {stats::filter(x, rep(1/n, n), sides = 1)}
+# write.csv(weather_dailymean, "../data/TT24_daily_weather_summary.csv", row.names = F)
 
+# Add 10-day rolling mean (rolling total for precip) for climate data 
+weather_dailymean$tavg10 <- rollmean(x = weather_dailymean$airtemp_mean, k = 10,
+                                     fill = NA, align = "right")
+weather_dailymean$vp10 <- rollmean(x = weather_dailymean$vaporpressure_mean, k = 10,
+                                   fill = NA, align = "right")
+weather_dailymean$atmpres10 <- rollmean(x = weather_dailymean$atmpressure_mean, k = 10,
+                                   fill = NA, align = "right")
+weather_dailymean$vpd10 <- rollmean(x = weather_dailymean$vpd_mean, k = 10,
+                                   fill = NA, align = "right")
 
+# create data frame with only 10-day rolling means
+rolling_average_10 <- weather_dailymean %>%
+  filter(!is.na(tavg10)) %>%
+  select(date_only, doy, tavg10:vpd10)
 
-climate_10day <- data.frame(doy = unique(aci_coefs$doy))
+# visualize rolling mean values
+hist(rolling_average_10$tavg10)
+hist(rolling_average_10$vp10)
+hist(rolling_average_10$atmpres10)
+hist(rolling_average_10$vpd10)
+
 
 #####################################################################
 # Compile A/Ci parameter estimates and snapshot measurements
 #####################################################################
 total_photo <- aci_coefs %>%
   full_join(snapshot, by = c("id", "doy")) %>%
-  full_join(treatments, by = c("subplot"))
-
-
-
-#####################################################################
-# Compile A/Ci parameter estimates and snapshot measurements
-#####################################################################
-photo_cleaned_full <- aci_coefs %>%
-  mutate(doy = as.numeric(doy),
-         subplot = as.numeric(subplot),
-         across(Vcmax:TPU, as.numeric)) %>%
   left_join(treatments, by = c("subplot")) %>%
-  full_join(snapshot, by = c("id", "doy")) %>%
+  left_join(rolling_average_10, by = "doy") %>%
   mutate(vcmax25 = temp_standardize(estimate = Vcmax,
                                     estimate.type = "Vcmax",
                                     standard.to = 25,
                                     tLeaf = Tleaf,
-                                    tGrow = ),
+                                    tGrow = tavg10),
          jmax25 = temp_standardize(estimate = Jmax,
                                    estimate.type = "Jmax",
                                    standard.to = 25,
                                    tLeaf = Tleaf,
-                                   tGrow = ),
+                                   tGrow = tavg10),
          rd25 = temp_standardize(estimate = Rd,
                                  estimate.type = "Rd",
                                  pft = "C3H",
                                  standard.to = 25,
                                  tLeaf = Tleaf,
-                                 tGrow = )) %>%
-  dplyr::select(id, machine, doy, spp:subplot, gm.trt, Tleaf,
-                anet, ci.ca, gsw, iwue, vcmax = Vcmax, vcmax25,
-                jmax = Jmax, jmax25, rd = Rd, rd25) %>%
-  mutate(across(Tleaf:rd25, \(x) round(x, digits = 4))) %>%
-  arrange(plot, doy)
+                                 tGrow = tavg10)) %>%
+  dplyr::select(id, machine, date = date_only, doy, spp:subplot, gm.trt, 
+                anet, ci.ca, gsw, iwue, vcmax = Vcmax, vcmax25, jmax = Jmax, 
+                jmax25, rd = Rd, rd25, TPU, leaf_length_cm, stem_length_cm, 
+                Tleaf, tavg10:vpd10) %>%
+  mutate(across(anet:vpd10, \(x) round(x, digits = 4))) %>%
+  arrange(doy, plot, subplot)
 
-write.csv(photo_cleaned_full,
-          "../data/TT24_photo_traits_working.csv", 
-          row.names = F)
+# write.csv(total_photo, "../data/TT24_photo_traits.csv", 
+#           row.names = F)
+
