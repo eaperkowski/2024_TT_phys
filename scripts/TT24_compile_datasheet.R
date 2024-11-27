@@ -34,6 +34,10 @@ treatments <- data.frame(subplot = seq(1,36, 1)) %>%
 aci_coefs <- read.csv("../data/TT24_curve_fits.csv")
 snapshot <- read.csv("../data/TT24_photo_snapshot.csv")
 
+# Read.csv for multispeq
+multispeq <- read.csv("../data/TT24_multispeq_data.csv") %>%
+  select(time, id = tag_id, species, everything())
+
 # Read .csv for weather station data
 weather <- read.csv("../data/TT24_weather_station_data.csv")
 
@@ -72,7 +76,6 @@ hist(rolling_average_10$tavg10)
 hist(rolling_average_10$vp10)
 hist(rolling_average_10$atmpres10)
 hist(rolling_average_10$vpd10)
-
 
 #####################################################################
 # Compile A/Ci parameter estimates and snapshot measurements
