@@ -19,7 +19,11 @@ library(zoo) ## for running mean fxn
 # Load custom functions for cleaning LI-6800 files,
 # standardizing Vcmax/Jmax/Rd to single temperature,
 # and calculating 
-R.utils::sourceDirectory("../functions/")
+R.utils::sourceDirectory(path = "../functions/", pattern = "*.R")
+
+# Create functions for estimating total leaf area
+calc_leafarea_tri <- function(x) exp(log(x)*2.2) # where x = leaf length
+calc_leafarea_mai <- function(x) exp(log(x)*1.6)
 
 # Create data frame containing subplots and their treatments for
 # easy merge with photosynthetic trait data
@@ -80,6 +84,7 @@ hist(rolling_average_10$vpd10)
 #####################################################################
 # Compile A/Ci parameter estimates and snapshot measurements
 #####################################################################
+
 total_photo <- aci_coefs %>%
   full_join(snapshot, by = c("id", "doy")) %>%
   left_join(treatments, by = c("subplot")) %>%
@@ -99,14 +104,28 @@ total_photo <- aci_coefs %>%
                                  pft = "C3H",
                                  standard.to = 25,
                                  tLeaf = Tleaf,
-                                 tGrow = tavg10)) %>%
+                                 tGrow = tavg10),
+         total_leaf_area_cm2 = ifelse(spp == "Tri",
+                                      calc_leafarea_tri(leaf_length_cm),
+                                      ifelse(spp == "Mai",
+                                             calc_leafarea_mai(stem_length_cm),
+                                             NA))) %>%
   dplyr::select(id, machine, date = date_only, doy, spp:subplot, gm.trt, 
                 anet, ci.ca, gsw, iwue, vcmax = Vcmax, vcmax25, jmax = Jmax, 
-                jmax25, rd = Rd, rd25, TPU, leaf_length_cm, stem_length_cm, 
-                Tleaf, tavg10:vpd10) %>%
+                jmax25, rd = Rd, rd25, TPU, leaf_length_cm, stem_length_cm,
+                total_leaf_area_cm2, Tleaf, tavg10:vpd10) %>%
   mutate(across(anet:vpd10, \(x) round(x, digits = 4))) %>%
   arrange(doy, plot, subplot)
 
-# write.csv(total_photo, "../data/TT24_photo_traits.csv", 
-#           row.names = F)
+write.csv(total_photo, "../data/TT24_photo_traits.csv", 
+          row.names = F)
+
+ggplot(data = total_photo, aes(x = doy, y = total_leaf_area_cm2,
+                               fill = spp)) +
+  geom_line(aes(group = id)) +
+  geom_point(shape = 21, size = 2) +
+  facet_grid(~spp) +
+  theme_classic(base_size = 18)
+
+
 
