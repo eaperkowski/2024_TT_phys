@@ -21,19 +21,114 @@ library(ggpubr)
 photo_traits <- read.csv("../data/TT24_photo_traits.csv") %>% 
   mutate(gm.trt = factor(gm.trt, levels = c( "weeded", "ambient")))
 
-## Add code for facet labels
+# Add code for facet labels
 facet.labs <- c("Trillium spp.", "M. racemosum")
 names(facet.labs) <- c("Tri", "Mai")
 
-## Color palettes
+# Color palettes
 gm.colors <- c("#00B2BE", "#F1B700")
 
 
 #####################################################################
+# Discretize size distribution into 5 size classes - Trillium
+#####################################################################
+# Visualize Trillium size distribution
+ggplot(data = subset(distinct(photo_traits, id, .keep_all = T), spp == "Tri"),
+       aes(x = init_leaf_area)) +
+  geom_histogram(aes(y = (after_stat(count)/sum(after_stat(count)))), 
+                 bins = 5, fill = "gray", colour = "black") +
+  labs(x = expression("Initial total leaf area (cm"^"2"*")"),
+       y = "Relative Frequency") +
+  theme_classic(base_size = 18)
+
+# Create data frame that includes two options for bin ranges
+tri_intervals <- data.frame(
+  id = subset(
+    distinct(photo_traits, id, .keep_all = T), spp == "Tri")$id,
+  
+  spp = "Tri",
+  
+  init_leaf_area = subset(
+    distinct(photo_traits, id, .keep_all = T), spp == "Tri")$init_leaf_area,
+  
+  # bin ranges if the range of total leaf area is equally 
+  # divided into 5 bins
+  range_interval = cut_interval(
+    x = subset(distinct(photo_traits, id, .keep_all = T), 
+               spp == "Tri")$init_leaf_area, n = 5),
+  
+  # bin ranges if the number of individuals are equally 
+  # divided into 5 bins
+  number_interval = cut_number(
+    x = subset(distinct(photo_traits, id, .keep_all = T), 
+               spp == "Tri")$init_leaf_area, n = 5))
+
+# Bin ranges if total leaf area is equally divided into 5 bins
+unique(tri_intervals$range_interval)
+# Levels: [53.4-167], [167-280], [280-394], [394-507], [507-621]
+
+# Bin ranges such that each bin contains the same number of inds
+unique(tri_intervals$number_interval)
+# Levels: [53.4-99.7], [99.7-142], [142-203], [203-322], [322-621]
+
+
+#####################################################################
+# Discretize size distribution into 5 size classes - Maianthemum
+#####################################################################
+# Visualize Trillium size distribution
+ggplot(data = subset(distinct(photo_traits, id, .keep_all = T), spp == "Mai"),
+       aes(x = init_leaf_area)) +
+  geom_histogram(aes(y = (after_stat(count)/sum(after_stat(count)))), 
+                 bins = 5, fill = "gray", colour = "black") +
+  labs(x = expression("Initial total leaf area (cm"^"2"*")"),
+       y = "Relative Frequency") +
+  theme_classic(base_size = 18)
+
+# Create data frame that includes two options for bin ranges
+mai_intervals <- data.frame(
+  id = subset(
+    distinct(photo_traits, id, .keep_all = T), spp == "Mai")$id,
+  
+  spp = "Mai",
+  
+  init_leaf_area = subset(
+    distinct(photo_traits, id, .keep_all = T), spp == "Mai")$init_leaf_area,
+  
+  # bin ranges if the range of total leaf area is equally 
+  # divided into 5 bins
+  range_interval = cut_interval(
+    x = subset(distinct(photo_traits, id, .keep_all = T), 
+               spp == "Mai")$init_leaf_area, n = 5),
+  
+  # bin ranges if the number of individuals are equally 
+  # divided into 5 bins
+  number_interval = cut_number(
+    x = subset(distinct(photo_traits, id, .keep_all = T), 
+               spp == "Mai")$init_leaf_area, n = 5))
+
+# Bin ranges if total leaf area is equally divided into 5 bins
+unique(mai_intervals$range_interval)
+# Levels: [59.8-271], [271-483], [483-695], [695-906], [906-1120]
+
+# Bin ranges such that each bin contains the same number of inds
+unique(mai_intervals$number_interval)
+# Levels: [59.8-201], [201-349], [349-554], [554-673], [673-1120]
+
+#####################################################################
+# Merge Tri and Mai intervals and join with photo_traits
+#####################################################################
+
+# Merge Tri and Mai intervals
+intervals <- tri_intervals %>%
+  full_join(mai_intervals)
+
+# Join with photo_traits
+photo_traits <- photo_traits %>%
+  full_join(intervals)
+
+#####################################################################
 # Anet - Tri
 #####################################################################
-photo_traits$vcmax25[c(281, 296, 452)] <- NA
-
 anet_tri <- lmer(log(anet) ~ gm.trt * doy + (1:doy|id), 
                  data = subset(photo_traits, spp == "Tri" & anet > 0))
 
@@ -58,7 +153,6 @@ test(emtrends(anet_tri, pairwise~gm.trt, "doy"))
 # Are there any timepoints during the growing season where garlic mustard
 # treatment significantly modifies Jmax25?
 emmeans(anet_tri, pairwise~gm.trt, "doy", at = list(doy = seq(105, 230, 5)))
-
 
 # Plot prep
 anet_tri_results <- data.frame(
@@ -154,15 +248,10 @@ anet_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" &
         panel.grid.minor.y = element_blank())
 anet_mai_plot
 
-## stopped here 11/18/24 09:44
-
-
 #####################################################################
 # Vcmax - Tri
 #####################################################################
-photo_traits$vcmax[c(184)] <- NA
-
-vcmax_tri <- lmer(sqrt(vcmax) ~ gm.trt * doy + (1:doy|id), 
+vcmax_tri <- lmer(sqrt(vcmax) ~ gm.trt * doy + (1|id), 
                     data = subset(photo_traits, spp == "Tri"))
 
 # Check model assumptions
@@ -180,9 +269,8 @@ r.squaredGLMM(vcmax_tri)
 
 # Pairwise comparisons
 test(emtrends(vcmax_tri, pairwise~gm.trt, "doy"))
-## The reduction in Vcmax across the growing season was stronger 
-## (i.e., more negative) in the weeded treatment compared to the
-## ambient treatment
+## Slope that explains doy-vcmax relationship is significantly more 
+## negative in weeded treatment than ambient treatment
 
 # Are there any timepoints during the growing season where garlic mustard
 # treatment significantly modifies Vcmax? 
@@ -210,8 +298,8 @@ vcmax_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.tr
               aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = vcmax_tri_results,
-              aes(x = doy, y = response, ymin = response - SE, 
-                  ymax = response + SE, fill = gm.trt), alpha = 0.25) +
+              aes(x = doy, y = response, ymin = lower.CL, 
+                  ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
   scale_x_continuous(limits = c(100, 170), breaks = seq(100, 170, 20)) +
@@ -230,11 +318,42 @@ vcmax_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.tr
 vcmax_tri_plot
 
 #####################################################################
-# Vcmax - Tri
+# Vcmax - Tri including size classes (number_interval to keep number
+# of reps within each class the same)
 #####################################################################
-photo_traits$vcmax[c(184)] <- NA
+vcmax_tri_numbInt <- lmer(
+  sqrt(vcmax) ~ gm.trt * doy * number_interval + (1|id), 
+  data = subset(photo_traits, spp == "Tri"))
 
-vcmax_mai <- lmer(log(vcmax) ~ gm.trt * doy + (1:doy|id), 
+# Check model assumptions
+plot(vcmax_tri_numbInt)
+qqnorm(residuals(vcmax_tri_numbInt))
+qqline(residuals(vcmax_tri_numbInt))
+densityPlot(residuals(vcmax_tri_numbInt))
+shapiro.test(residuals(vcmax_tri_numbInt))
+outlierTest(vcmax_tri_numbInt)
+
+# Model output
+summary(vcmax_tri_numbInt)
+Anova(vcmax_tri_numbInt)
+r.squaredGLMM(vcmax_tri_numbInt)
+
+# Pairwise comparisons
+test(emtrends(vcmax_tri_numbInt, pairwise~gm.trt, "doy"))
+## Slope that explains doy-vcmax relationship is significantly more 
+## negative in weeded treatment than ambient treatment
+
+emmeans(vcmax_tri_numbInt, pairwise~gm.trt, "doy", at = list(doy = seq(105, 230, 5)))
+
+cld(emmeans(vcmax_tri_numbInt, pairwise~number_interval))
+# Smaller size generally increases Vcmax. However, size classes are
+# unrelated to the effect of gm.trt or doy (and their interaction)
+# on Vcmax
+
+#####################################################################
+# Vcmax - Mai
+#####################################################################
+vcmax_mai <- lmer(log(vcmax) ~ gm.trt * doy + (1|id), 
                   data = subset(photo_traits, spp == "Mai"))
 
 # Check model assumptions
@@ -252,7 +371,7 @@ r.squaredGLMM(vcmax_mai)
 
 # Pairwise comparisons
 test(emtrends(vcmax_mai, pairwise~gm.trt, "doy"))
-## The DOY effect is marginally stronger in the ambient treatment
+## The negative DOY effect is marginally stronger in the ambient treatment
 ## as compared to the weeded treatment
 
 # Plot prep
@@ -269,8 +388,8 @@ vcmax_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.tr
               aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = vcmax_mai_results,
-              aes(x = doy, y = response, ymin = response - SE, 
-                  ymax = response + SE, fill = gm.trt), alpha = 0.25) +
+              aes(x = doy, y = response, ymin = lower.CL, 
+                  ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
   scale_x_continuous(limits = c(110, 240), breaks = seq(120, 240, 30)) +
@@ -289,9 +408,35 @@ vcmax_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.tr
 vcmax_mai_plot
 
 #####################################################################
+# Vcmax - Mai including size classes
+#####################################################################
+vcmax_mai_numbInt <- lmer(
+  log(vcmax) ~ gm.trt * doy * number_interval + (1|id), 
+  data = subset(photo_traits, spp == "Mai"))
+
+# Check model assumptions
+plot(vcmax_mai_numbInt)
+qqnorm(residuals(vcmax_mai_numbInt))
+qqline(residuals(vcmax_mai_numbInt))
+densityPlot(residuals(vcmax_mai_numbInt))
+shapiro.test(residuals(vcmax_mai_numbInt))
+outlierTest(vcmax_mai_numbInt)
+
+# Model output
+summary(vcmax_mai_numbInt)
+Anova(vcmax_mai_numbInt)
+r.squaredGLMM(vcmax_mai_numbInt)
+
+# Pairwise comparisons
+test(emtrends(vcmax_mai_numbInt, ~1, "doy"))
+
+cld(emmeans(vcmax_mai_numbInt, pairwise~number_interval))
+# Vcmax generally greatest in higher size classes
+
+#####################################################################
 # Jmax - Tri
 #####################################################################
-jmax_tri <- lmer(jmax ~ gm.trt * doy + (1:doy|id), 
+jmax_tri <- lmer(jmax ~ gm.trt * doy + (1|id), 
                   data = subset(photo_traits, spp == "Tri"))
 
 # Check model assumptions
@@ -309,7 +454,7 @@ r.squaredGLMM(jmax_tri)
 
 # Pairwise comparisons
 test(emtrends(jmax_tri, pairwise~gm.trt, "doy"))
-## The reduction in Jmax across the growing season was stronger 
+## The reduction in Jmax across the growing season is stronger 
 ## (i.e., more negative) in the weeded treatment compared to the
 ## ambient treatment
 
@@ -339,8 +484,8 @@ jmax_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.trt
               aes(x = doy, y = emmean, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = jmax_tri_results,
-              aes(x = doy, y = emmean, ymin = emmean - SE, 
-                  ymax = emmean + SE, fill = gm.trt), alpha = 0.25) +
+              aes(x = doy, y = emmean, ymin = lower.CL, 
+                  ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
   scale_x_continuous(limits = c(100, 170), breaks = seq(100, 170, 20)) +
@@ -359,11 +504,44 @@ jmax_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.trt
 jmax_tri_plot
 
 #####################################################################
+# Jmax - Tri including size classes (number_interval to keep number
+# of reps within each class the same)
+#####################################################################
+jmax_tri_numbInt <- lmer(
+  jmax ~ gm.trt * doy * number_interval + (1|id), 
+  data = subset(photo_traits, spp == "Tri"))
+
+# Check model assumptions
+plot(jmax_tri_numbInt)
+qqnorm(residuals(jmax_tri_numbInt))
+qqline(residuals(jmax_tri_numbInt))
+densityPlot(residuals(jmax_tri_numbInt))
+shapiro.test(residuals(jmax_tri_numbInt))
+outlierTest(jmax_tri_numbInt)
+
+# Model output
+summary(jmax_tri_numbInt)
+Anova(jmax_tri_numbInt)
+r.squaredGLMM(jmax_tri_numbInt)
+
+# Pairwise comparisons
+test(emtrends(jmax_tri_numbInt, pairwise~gm.trt, "doy"))
+## Slope that explains doy-jmax relationship is significantly more 
+## negative in weeded treatment than ambient treatment
+emmeans(jmax_tri_numbInt, pairwise~gm.trt, "doy", at = list(doy = seq(105, 230, 5)))
+
+cld(emtrends(jmax_tri_numbInt, pairwise~number_interval, "doy"))
+## Slope that explains doy-jmax relationship seems to be significantly
+## more negative in smaller age classes (maybe premature senescence?)
+
+cld(emmeans(jmax_tri_numbInt, pairwise~number_interval))
+# Smaller size seems to increase Jmax. Size classes are
+# unrelated to the effect of gm.trt on Jmax
+
+#####################################################################
 # Jmax - Mai
 #####################################################################
-photo_traits$jmax25[9] <- NA
-
-jmax_mai <- lmer(log(jmax) ~ gm.trt * doy + (1:doy|id), 
+jmax_mai <- lmer(log(jmax) ~ gm.trt * doy + (1|id), 
                    data = subset(photo_traits, spp == "Mai"))
 
 # Check model assumptions
@@ -390,13 +568,14 @@ jmax_mai_results <- data.frame(
 # Plot
 jmax_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.trt)), 
                           aes(x = doy, y = jmax, fill = gm.trt)) +
+  geom_line(aes(group = id), alpha = 0.1) +
   geom_point(size = 2.5, shape = 21, alpha = 0.7) +
   geom_smooth(data = jmax_mai_results,
               aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = jmax_mai_results,
-              aes(x = doy, y = response, ymin = response - SE, 
-                  ymax = response + SE, fill = gm.trt), alpha = 0.25) +
+              aes(x = doy, y = response, ymin = lower.CL, 
+                  ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
   scale_x_continuous(limits = c(120, 240), breaks = seq(120, 240, 30)) +
@@ -415,6 +594,35 @@ jmax_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.trt
 jmax_mai_plot
 
 #####################################################################
+# Jmax - Mai including size classes (number_interval to keep number
+# of reps within each class the same)
+#####################################################################
+jmax_mai_numbInt <- lmer(
+  log(jmax) ~ gm.trt * doy * number_interval + (1|id), 
+  data = subset(photo_traits, spp == "Mai"))
+
+# Check model assumptions
+plot(jmax_mai_numbInt)
+qqnorm(residuals(jmax_mai_numbInt))
+qqline(residuals(jmax_mai_numbInt))
+densityPlot(residuals(jmax_mai_numbInt))
+shapiro.test(residuals(jmax_mai_numbInt))
+outlierTest(jmax_mai_numbInt)
+
+# Model output
+summary(jmax_mai_numbInt)
+Anova(jmax_mai_numbInt)
+r.squaredGLMM(jmax_mai_numbInt)
+
+# Pairwise comparisons
+cld(emtrends(jmax_mai_numbInt, ~gm.trt|number_interval, "doy"))
+
+test(emtrends(jmax_mai_numbInt, ~1, "doy"))
+
+cld(emmeans(jmax_mai_numbInt, pairwise~number_interval))
+# Jmax generally greatest in higher size classes
+
+#####################################################################
 #####################################################################
 # TEMP STANDARDIZED RATES
 #####################################################################
@@ -425,7 +633,7 @@ jmax_mai_plot
 #####################################################################
 photo_traits$vcmax25[c(281, 296, 452)] <- NA
 
-vcmax25_tri <- lmer(log(vcmax25) ~ gm.trt * doy + (1:doy|id), 
+vcmax25_tri <- lmer(log(vcmax25) ~ gm.trt * doy + (1|id), 
                     data = subset(photo_traits, spp == "Tri"))
 
 # Check model assumptions
@@ -450,10 +658,9 @@ test(emtrends(vcmax25_tri, pairwise~gm.trt, "doy"))
 # treatment significantly modifies Vcmax25?
 emmeans(vcmax25_tri, pairwise~gm.trt, "doy", at = list(doy = seq(105, 230, 5)))
 # Ambient GM treatment exhibits *reduced* Vcmax25 in the early season
-# (e.g., doy == 105 and marginally at doy == 110), but this effect rapidly 
-# diminishes and ambient GM treatment exhibits significantly greater Vcmax25 
-# values at end of Tri sampling period (i.e., doy == 150, marginal effect 
-# at doy == 145)
+# (doy == 105), but this effect rapidly diminishes and ambient GM treatment 
+# exhibits significantly greater Vcmax25 values at end of Tri sampling period 
+# (i.e., doy == 165, marginal effect at doy == 155, 160)
 
 # Plot prep
 vcmax25_tri_results <- data.frame(
@@ -469,8 +676,8 @@ vcmax25_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.
               aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = vcmax25_tri_results,
-              aes(x = doy, y = response, ymin = response - SE, 
-                  ymax = response + SE, fill = gm.trt), alpha = 0.25) +
+              aes(x = doy, y = response, ymin = lower.CL, 
+                  ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
   scale_x_continuous(limits = c(100, 170), breaks = seq(100, 170, 20)) +
@@ -489,11 +696,42 @@ vcmax25_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.
 vcmax25_tri_plot
 
 #####################################################################
+# Vcmax25 - Tri including size classes (number_interval to keep number
+# of reps within each class the same)
+#####################################################################
+vcmax25_tri_numbInt <- lmer(
+  log(vcmax25) ~ gm.trt * doy * number_interval + (1|id), 
+  data = subset(photo_traits, spp == "Tri"))
+
+# Check model assumptions
+plot(vcmax25_tri_numbInt)
+qqnorm(residuals(vcmax25_tri_numbInt))
+qqline(residuals(vcmax25_tri_numbInt))
+densityPlot(residuals(vcmax25_tri_numbInt))
+shapiro.test(residuals(vcmax25_tri_numbInt))
+outlierTest(vcmax25_tri_numbInt)
+
+# Model output
+summary(vcmax25_tri_numbInt)
+Anova(vcmax25_tri_numbInt)
+r.squaredGLMM(vcmax25_tri_numbInt)
+
+# Pairwise comparisons
+test(emtrends(vcmax25_tri_numbInt, pairwise~gm.trt, "doy"))
+## Slope that explains doy-vcmax25 relationship is significantly more 
+## negative in weeded treatment than ambient treatment
+
+emmeans(vcmax25_tri_numbInt, pairwise~gm.trt, "doy", at = list(doy = seq(105, 230, 5)))
+
+cld(emmeans(vcmax25_tri_numbInt, pairwise~gm.trt|number_interval))
+# Vcmax25 is greater in ambient plots, but only in lowest size class
+
+#####################################################################
 # Vcmax25 - Mai
 #####################################################################
 photo_traits$vcmax25[95] <- NA
 
-vcmax25_mai <- lmer(log(vcmax25) ~ gm.trt * doy + (1:doy|id), 
+vcmax25_mai <- lmer(log(vcmax25) ~ gm.trt * doy + (1|id), 
                     data = subset(photo_traits, spp == "Mai"))
 
 # Check model assumptions
@@ -511,8 +749,7 @@ r.squaredGLMM(vcmax25_mai)
 
 # Pairwise comparisons
 test(emtrends(vcmax25_mai, pairwise~gm.trt, "doy")) 
-
-# GM decreases Vcmax more strongly
+# GM presence decreases Vcmax more strongly across growing season
 
 # Are there any timepoints during the growing season where garlic mustard
 # treatment significantly modifies Vcmax25?
@@ -525,10 +762,10 @@ vcmax25_mai_results <- data.frame(
   emmeans(vcmax25_mai, ~gm.trt, "doy", at = list(doy = seq(120, 240, 1)),
           type = "response"))
 
-
 # Plot
 vcmax25_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.trt)), 
                          aes(x = doy, y = vcmax25, fill = gm.trt)) +
+  geom_line(aes(group = id), alpha = 0.1) +
   geom_point(size = 2.5, shape = 21, alpha = 0.7) +
   geom_smooth(data = vcmax25_mai_results,
               aes(x = doy, y = response, color = gm.trt),
@@ -554,11 +791,44 @@ vcmax25_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.
 vcmax25_mai_plot
 
 #####################################################################
+# Vcmax25 - Mai including size classes (number_interval to keep number
+# of reps within each class the same)
+#####################################################################
+photo_traits$vcmax25[c(99,122)] <- NA
+
+vcmax25_mai_numbInt <- lmer(
+  log(vcmax25) ~ gm.trt * doy * number_interval + (1|id), 
+  data = subset(photo_traits, spp == "Mai"))
+
+# Check model assumptions
+plot(vcmax25_mai_numbInt)
+qqnorm(residuals(vcmax25_mai_numbInt))
+qqline(residuals(vcmax25_mai_numbInt))
+densityPlot(residuals(vcmax25_mai_numbInt))
+shapiro.test(residuals(vcmax25_mai_numbInt))
+outlierTest(vcmax25_mai_numbInt)
+
+# Model output
+summary(vcmax25_mai_numbInt)
+Anova(vcmax25_mai_numbInt)
+r.squaredGLMM(vcmax25_mai_numbInt)
+
+# Pairwise comparisons
+test(emtrends(vcmax25_mai_numbInt, ~gm.trt, "doy"))
+## Reductions in Vcmax25 across the growing season are significantly
+## greater in the ambient treatment
+
+cld(emtrends(vcmax25_mai_numbInt, ~gm.trt|number_interval, "doy"))
+## Stronger Vcmax25 reductions across growing season in ambient
+## treatment are driven by 554-673cm2 and 673-1120cm2 size classes
+## (i.e., GM treatment more strongly influences larger Mai)
+
+#####################################################################
 # Jmax25 - Tri
 #####################################################################
 photo_traits$jmax25[c(281, 296, 452)] <- NA
 
-jmax25_tri <- lmer(log(jmax25) ~ gm.trt * doy + (1:doy|id), 
+jmax25_tri <- lmer(log(jmax25) ~ gm.trt * doy + (1|id), 
                    data = subset(photo_traits, spp == "Tri"))
 
 # Check model assumptions
@@ -593,13 +863,14 @@ jmax25_tri_results <- data.frame(
 # Plot
 jmax25_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.trt)), 
                         aes(x = doy, y = jmax25, fill = gm.trt)) +
+  geom_line(aes(group = id), alpha = 0.1) +
   geom_point(size = 2.5, shape = 21, alpha = 0.7) +
   geom_smooth(data = jmax25_tri_results,
               aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = jmax25_tri_results,
-              aes(x = doy, y = response, ymin = response - SE, 
-                  ymax = response + SE, fill = gm.trt), alpha = 0.25) +
+              aes(x = doy, y = response, ymin = lower.CL, 
+                  ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
   scale_y_continuous(limits = c(0, 210), breaks = seq(0, 200, 50)) + 
@@ -614,15 +885,40 @@ jmax25_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.t
         strip.background = element_blank(),
         strip.text = element_text(face = "italic"),
         panel.grid.minor.y = element_blank())
-
 jmax25_tri_plot
+
+#####################################################################
+# Jmax25 - Tri including size classes (number_interval to keep number
+# of reps within each class the same)
+#####################################################################
+jmax25_tri_numbInt <- lmer(
+  log(jmax25) ~ gm.trt * doy * number_interval + (1|id), 
+  data = subset(photo_traits, spp == "Tri"))
+
+# Check model assumptions
+plot(jmax25_tri_numbInt)
+qqnorm(residuals(jmax25_tri_numbInt))
+qqline(residuals(jmax25_tri_numbInt))
+densityPlot(residuals(jmax25_tri_numbInt))
+shapiro.test(residuals(jmax25_tri_numbInt))
+outlierTest(jmax25_tri_numbInt)
+
+# Model output
+summary(jmax25_tri_numbInt)
+Anova(jmax25_tri_numbInt)
+r.squaredGLMM(jmax25_tri_numbInt)
+
+# Pairwise comparisons
+test(emtrends(jmax25_tri_numbInt, pairwise~gm.trt, "doy"))
+## Reductions in Jmax25 across the growing season are stronger
+## in weeded treatment
 
 #####################################################################
 # Jmax25 - Mai
 #####################################################################
 photo_traits$jmax25[9] <- NA
 
-jmax25_mai <- lmer(log(jmax25) ~ gm.trt * doy + (1:doy|id), 
+jmax25_mai <- lmer(log(jmax25) ~ gm.trt * doy + (1|id), 
                    data = subset(photo_traits, spp == "Mai"))
 
 # Check model assumptions
@@ -658,13 +954,14 @@ jmax25_mai_results <- data.frame(
 # Plot
 jmax25_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.trt)), 
                           aes(x = doy, y = jmax25, fill = gm.trt)) +
+  geom_line(aes(group = id), alpha = 0.1) +
   geom_point(size = 2.5, shape = 21, alpha = 0.7) +
   geom_smooth(data = jmax25_mai_results,
               aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = jmax25_mai_results,
-              aes(x = doy, y = response, ymin = response - SE, 
-                  ymax = response + SE, fill = gm.trt), alpha = 0.25) +
+              aes(x = doy, y = response, ymin = lower.CL, 
+                  ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
   scale_x_continuous(limits = c(120, 240), breaks = seq(120, 240, 30)) +
@@ -682,8 +979,40 @@ jmax25_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.t
         panel.grid.minor.y = element_blank())
 jmax25_mai_plot
 
+#####################################################################
+# Jmax25 - Mai including size classes (number_interval to keep number
+# of reps within each class the same)
+#####################################################################
+jmax25_mai_numbInt <- lmer(
+  log(jmax25) ~ gm.trt * doy * number_interval + (1|id), 
+  data = subset(photo_traits, spp == "Mai"))
 
-png("../data/TT24_temp_standardized_vcmax_jmax.png", width = 10, height = 10,
+# Check model assumptions
+plot(jmax25_mai_numbInt)
+qqnorm(residuals(jmax25_mai_numbInt))
+qqline(residuals(jmax25_mai_numbInt))
+densityPlot(residuals(jmax25_mai_numbInt))
+shapiro.test(residuals(jmax25_mai_numbInt))
+outlierTest(jmax25_mai_numbInt)
+
+# Model output
+summary(jmax25_mai_numbInt)
+Anova(jmax25_mai_numbInt)
+r.squaredGLMM(jmax25_mai_numbInt)
+
+# Pairwise comparisons
+test(emtrends(jmax25_mai_numbInt, pairwise~gm.trt, "doy"))
+## Reductions in Jmax25 across the growing season are similar
+## between gm treatments
+
+cld(emtrends(jmax25_mai_numbInt, ~gm.trt|number_interval, "doy"))
+## Jmax25 reductions across growing season are stronger in ambient
+## treatment in larger size classes
+
+#####################################################################
+# Compile plots
+#####################################################################
+png("../drafts/figs/TT24_temp_standardized_vcmax_jmax.png", width = 10, height = 10,
     units = "in", res = 600)
 ggarrange(vcmax25_tri_plot, vcmax25_mai_plot,
           jmax25_tri_plot, jmax25_mai_plot,

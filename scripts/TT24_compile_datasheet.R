@@ -104,28 +104,48 @@ total_photo <- aci_coefs %>%
                                  pft = "C3H",
                                  standard.to = 25,
                                  tLeaf = Tleaf,
-                                 tGrow = tavg10),
-         total_leaf_area_cm2 = ifelse(spp == "Tri",
-                                      calc_leafarea_tri(leaf_length_cm),
-                                      ifelse(spp == "Mai",
-                                             calc_leafarea_mai(stem_length_cm),
-                                             NA))) %>%
+                                 tGrow = tavg10)) %>%
   dplyr::select(id, machine, date = date_only, doy, spp:subplot, gm.trt, 
                 anet, ci.ca, gsw, iwue, vcmax = Vcmax, vcmax25, jmax = Jmax, 
                 jmax25, rd = Rd, rd25, TPU, leaf_length_cm, stem_length_cm,
-                total_leaf_area_cm2, Tleaf, tavg10:vpd10) %>%
+                Tleaf, tavg10:vpd10) %>%
   mutate(across(anet:vpd10, \(x) round(x, digits = 4))) %>%
   arrange(doy, plot, subplot)
 
-write.csv(total_photo, "../data/TT24_photo_traits.csv", 
-          row.names = F)
+# write.csv(total_photo, "../data/TT24_photo_traits.csv", 
+#           row.names = F)
 
-ggplot(data = total_photo, aes(x = doy, y = total_leaf_area_cm2,
-                               fill = spp)) +
-  geom_line(aes(group = id)) +
-  geom_point(shape = 21, size = 2) +
-  facet_grid(~spp) +
-  theme_classic(base_size = 18)
+# note: added all missing stem and leaf length data into traits
+# file after this, now using to calculate total leaf area as an
+# indicator of plant size
 
+total_photo <- read.csv("../data/TT24_photo_traits.csv")
+
+# Calculate total leaf area for all measurements
+total_photo$total_leaf_area_cm2 <- ifelse(
+  total_photo$spp == "Tri", 
+  calc_leafarea_tri(total_photo$leaf_length_cm),
+  ifelse(total_photo$spp == "Mai", 
+         calc_leafarea_mai(total_photo$stem_length_cm),
+         NA))
+
+# Calculate initial size of all inds using first allometry
+# measurement of each individual
+initial_size <- total_photo %>%
+  group_by(id) %>%
+  arrange(doy) %>%
+  slice_head(n = 1) %>%
+  select(id, 
+         init_leaf_length_cm = leaf_length_cm, 
+         init_stem_length_cm = stem_length_cm, 
+         init_leaf_area = total_leaf_area_cm2)
+
+# Merge initial size into total_photo dataset
+
+total_photo <- total_photo %>%
+  full_join(initial_size)
+
+write.csv(total_photo, "../data/TT24_photo_traits.csv", row.names = F)
+  
 
 
