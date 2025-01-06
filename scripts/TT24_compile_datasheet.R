@@ -23,7 +23,7 @@ R.utils::sourceDirectory(path = "../functions/", pattern = "*.R")
 
 # Create functions for estimating total leaf area
 calc_leafarea_tri <- function(x) exp(log(x)*2.2) # where x = leaf length
-calc_leafarea_mai <- function(x) exp(log(x)*1.6)
+calc_leafarea_mai <- function(x) exp(log(x)*1.6) # where x = stem length
 
 # Create data frame containing subplots and their treatments for
 # easy merge with photosynthetic trait data
@@ -40,7 +40,7 @@ snapshot <- read.csv("../data/TT24_photo_snapshot.csv")
 
 # Read.csv for multispeq
 multispeq <- read.csv("../data/TT24_multispeq_data.csv") %>%
-  select(time, id = tag_id, species, everything())
+  dplyr::select(time, id = tag_id, species, everything())
 
 # Read .csv for weather station data
 weather <- read.csv("../data/TT24_weather_station_data.csv")
@@ -73,7 +73,7 @@ weather_dailymean$vpd10 <- rollmean(x = weather_dailymean$vpd_mean, k = 10,
 # create data frame with only 10-day rolling means
 rolling_average_10 <- weather_dailymean %>%
   filter(!is.na(tavg10)) %>%
-  select(date_only, doy, tavg10:vpd10)
+  dplyr::select(date_only, doy, tavg10:vpd10)
 
 # visualize rolling mean values
 hist(rolling_average_10$tavg10)
@@ -106,7 +106,7 @@ total_photo <- aci_coefs %>%
                                  tLeaf = Tleaf,
                                  tGrow = tavg10)) %>%
   dplyr::select(id, machine, date = date_only, doy, spp:subplot, gm.trt, 
-                anet, ci.ca, gsw, iwue, vcmax = Vcmax, vcmax25, jmax = Jmax, 
+                anet, ci, ci.ca, gsw, iwue, vcmax = Vcmax, vcmax25, jmax = Jmax, 
                 jmax25, rd = Rd, rd25, TPU, leaf_length_cm, stem_length_cm,
                 Tleaf, tavg10:vpd10) %>%
   mutate(across(anet:vpd10, \(x) round(x, digits = 4))) %>%
@@ -145,7 +145,10 @@ initial_size <- total_photo %>%
 total_photo <- total_photo %>%
   full_join(initial_size)
 
-write.csv(total_photo, "../data/TT24_photo_traits.csv", row.names = F)
-  
+# write.csv(total_photo, "../data/TT24_photo_traits.csv", row.names = F)
+
+
+
+
 
 

@@ -1,4 +1,4 @@
-# TT24_compile_datasheet.R
+# TT24_crude_analysis.R
 # R script that gives a first stab look at the effects of GM on photosynthetic
 # processes in Trillium and Maianthemum
 # 
