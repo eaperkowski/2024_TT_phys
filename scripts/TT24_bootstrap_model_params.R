@@ -4,6 +4,7 @@
 # Libraries
 library(tidyverse)
 library(lme4)
+library(car)
 library(ggpubr)
 
 # Read .csv file
@@ -27,7 +28,7 @@ trt_df_placeholder <- expand.grid(
   doy = seq(100, 250, by = 1),
   gm.trt = levels(photo_traits$gm.trt))
 
-# Set seed for reproducibility
+# Set seed to maintain reproducible products
 set.seed(10)
 
 #####################################################################
@@ -35,7 +36,7 @@ set.seed(10)
 #####################################################################
 photo_traits$vcmax25[c(281, 296, 452)] <- NA
 
-vcmax25_tri <- lmer(log(vcmax25) ~ gm.trt * doy + (1|id), 
+vcmax25_tri <- lmer(log(vcmax25) ~ gm.trt * doy + (1|id) + (1 | plot), 
                     data = subset(photo_traits, spp == "Tri" & ci > 0))
 
 # Check model assumptions
@@ -51,7 +52,7 @@ outlierTest(vcmax25_tri)
 vcmax25_tri_boot <- bootMer(
   vcmax25_tri,
   predict_function,
-  nsim = 1000,
+  nsim = 150,
   type = "parametric")
 
 # Extract bootstrapped predictions
@@ -62,14 +63,14 @@ vcmax25_tri_boot_preds <- vcmax25_tri_boot$t
 # Combine bootstrapped predictions with doy and gm.trt descriptorys
 full_vcmax25_tri_boot_data <- data.frame(t(vcmax25_tri_boot_preds)) %>% 
   cbind(trt_df_placeholder) %>%
-  dplyr::select(doy, gm.trt, X1:X1000) %>%
+  dplyr::select(doy, gm.trt, X1:X150) %>%
   mutate(spp = "Tri",
-         across(X1:X1000, \(x) exp(x))) # Backtransform estimates to response scale
+         across(X1:X150, \(x) exp(x))) # Backtransform estimates to response scale
 head(full_vcmax25_tri_boot_data)
 
 # Move bootstrap data to long-format for easy load into climate dataset
 vcmax25_tri_boot_data_long <- full_vcmax25_tri_boot_data %>%
-  pivot_longer(cols = X1:X1000, 
+  pivot_longer(cols = X1:X150, 
                names_to = "boot_iter", 
                values_to = "Vcmax25_est")
 
@@ -88,9 +89,9 @@ ggplot(data = vcmax25_tri_boot_data_long,
 #####################################################################
 # Jmax25 - Tri (does not account for size... yet)
 #####################################################################
-photo_traits$jmax25[c(296)] <- NA
+photo_traits$jmax25[c(296, 281, 452)] <- NA
 
-jmax25_tri <- lmer(log(jmax25) ~ gm.trt * doy + (1|id), 
+jmax25_tri <- lmer(log(jmax25) ~ gm.trt * doy + (1|id) + (1 | plot), 
                           data = subset(photo_traits, spp == "Tri" & ci > 0))
 
 # Check model assumptions
@@ -106,25 +107,25 @@ outlierTest(jmax25_tri)
 jmax25_tri_boot <- bootMer(
   jmax25_tri,
   predict_function,
-  nsim = 1000,
+  nsim = 150,
   type = "parametric")
 
 # Extract bootstrapped predictions
 jmax25_tri_boot_preds <- jmax25_tri_boot$t  
-# Each column contains bootstrapped values (n = 1000) for each row 
+# Each column contains bootstrapped values (n = 150) for each row 
 # in `trt_df_placeholder`
 
 # Combine bootstrapped predictions with doy and gm.trt descriptorys
 full_jmax25_tri_boot_data <- data.frame(t(jmax25_tri_boot_preds)) %>% 
   cbind(trt_df_placeholder) %>%
-  dplyr::select(doy, gm.trt, X1:X1000) %>%
+  dplyr::select(doy, gm.trt, X1:X150) %>%
   mutate(spp = "Tri",
-         across(X1:X1000, \(x) exp(x))) # Backtransform estimates to response scale
+         across(X1:X150, \(x) exp(x))) # Backtransform estimates to response scale
 head(full_jmax25_tri_boot_data)
 
 # Move bootstrap data to long-format for easy load into climate dataset
 jmax25_tri_boot_data_long <- full_jmax25_tri_boot_data %>%
-  pivot_longer(cols = X1:X1000, 
+  pivot_longer(cols = X1:X150, 
                names_to = "boot_iter", 
                values_to = "Jmax25_est")
 
@@ -143,7 +144,7 @@ ggplot(data = jmax25_tri_boot_data_long,
 #####################################################################
 # Ci - Tri (does not account for size... yet)
 #####################################################################
-ci_tri <- lmer(ci ~ gm.trt * doy + (1|id), 
+ci_tri <- lmer(ci ~ gm.trt * doy + (1|id) + (1 | plot), 
                     data = subset(photo_traits, spp == "Tri" & ci > 0))
 
 # Check model assumptions
@@ -159,7 +160,7 @@ outlierTest(ci_tri)
 ci_tri_boot <- bootMer(
   ci_tri,
   predict_function,
-  nsim = 1000,
+  nsim = 150,
   type = "parametric"
 )
 
@@ -171,13 +172,13 @@ ci_tri_boot_preds <- ci_tri_boot$t
 # Combine bootstrapped predictions with doy and gm.trt descriptors
 full_ci_tri_boot_data <- data.frame(t(ci_tri_boot_preds)) %>% 
   cbind(trt_df_placeholder) %>%
-  dplyr::select(doy, gm.trt, X1:X1000) %>%
+  dplyr::select(doy, gm.trt, X1:X150) %>%
   mutate(spp = "Tri")
 head(full_ci_tri_boot_data)
 
 # Move bootstrap data to long-format for easy load into climate dataset
 ci_tri_boot_data_long <- full_ci_tri_boot_data %>%
-  pivot_longer(cols = X1:X1000, 
+  pivot_longer(cols = X1:X150, 
                names_to = "boot_iter", 
                values_to = "Ci_est")
 
@@ -196,7 +197,9 @@ ggplot(data = ci_tri_boot_data_long,
 #####################################################################
 # Vcmax25 - Mai (does not account for size... yet)
 #####################################################################
-vcmax25_mai <- lmer(log(vcmax25) ~ gm.trt * doy + (1 | id), 
+photo_traits$vcmax25[c(95, 99, 123)] <- NA
+
+vcmax25_mai <- lmer(log(vcmax25) ~ gm.trt * doy + (1 | id) + (1 | plot), 
                     data = subset(photo_traits, spp == "Mai" & ci > 0))
 
 # Check model assumptions
@@ -212,9 +215,8 @@ outlierTest(vcmax25_mai)
 vcmax25_mai_boot <- bootMer(
   vcmax25_mai,
   predict_function,
-  nsim = 1000,
-  type = "parametric"
-)
+  nsim = 150,
+  type = "parametric")
 
 # Extract bootstrapped predictions
 vcmax25_mai_boot_preds <- vcmax25_mai_boot$t  
@@ -224,14 +226,14 @@ vcmax25_mai_boot_preds <- vcmax25_mai_boot$t
 # Combine bootstrapped predictions with doy and gm.trt descriptorys
 full_vcmax25_mai_boot_data <- data.frame(t(vcmax25_mai_boot_preds)) %>% 
   cbind(trt_df_placeholder) %>%
-  dplyr::select(doy, gm.trt, X1:X1000) %>%
+  dplyr::select(doy, gm.trt, X1:X150) %>%
   mutate(spp = "Mai",
-         across(X1:X1000, \(x) exp(x))) # Backtransform estimates to response scale
+         across(X1:X150, \(x) exp(x))) # Backtransform estimates to response scale
 head(full_vcmax25_mai_boot_data)
 
 # Move bootstrap data to long-format for easy load into climate dataset
 vcmax25_mai_boot_data_long <- full_vcmax25_mai_boot_data %>%
-  pivot_longer(cols = X1:X1000, 
+  pivot_longer(cols = X1:X150, 
                names_to = "boot_iter", 
                values_to = "Vcmax25_est")
 
@@ -250,7 +252,7 @@ ggplot(data = vcmax25_mai_boot_data_long,
 #####################################################################
 # Jmax25 - Mai (does not account for size... yet)
 #####################################################################
-jmax25_mai <- lmer(log(jmax25) ~ gm.trt * doy + (1|id), 
+jmax25_mai <- lmer(log(jmax25) ~ gm.trt * doy + (1|id) + (1 | plot), 
                    data = subset(photo_traits, spp == "Mai" & ci > 0))
 
 # Check model assumptions
@@ -266,7 +268,7 @@ outlierTest(jmax25_mai)
 jmax25_mai_boot <- bootMer(
   jmax25_mai,
   predict_function,
-  nsim = 1000,
+  nsim = 150,
   type = "parametric")
 
 # Extract bootstrapped predictions
@@ -277,14 +279,14 @@ jmax25_mai_boot_preds <- jmax25_mai_boot$t
 # Combine bootstrapped predictions with doy and gm.trt descriptors
 full_jmax25_mai_boot_data <- data.frame(t(jmax25_mai_boot_preds)) %>% 
   cbind(trt_df_placeholder) %>%
-  dplyr::select(doy, gm.trt, X1:X1000) %>%
+  dplyr::select(doy, gm.trt, X1:X150) %>%
   mutate(spp = "Mai",
-         across(X1:X1000, \(x) exp(x))) # Backtransform estimates to response scale
+         across(X1:X150, \(x) exp(x))) # Backtransform estimates to response scale
 head(full_jmax25_mai_boot_data)
 
 # Move bootstrap data to long-format for easy load into climate dataset
 jmax25_mai_boot_data_long <- full_jmax25_mai_boot_data %>%
-  pivot_longer(cols = X1:X1000, 
+  pivot_longer(cols = X1:X150, 
                names_to = "boot_iter", 
                values_to = "Jmax25_est")
 
@@ -304,9 +306,9 @@ ggplot(data = jmax25_mai_boot_data_long,
 # Ci - Mai (does not account for size... yet)
 #####################################################################
 photo_traits$ci[c(367, 392, 790, 791, 820)] <- NA
-photo_traits$ci[c(171, 393, 450)] <- NA
+photo_traits$ci[c(171, 393, 450, 850)] <- NA
 
-ci_mai <- lmer(ci ~ gm.trt * doy + (1|id), 
+ci_mai <- lmer(ci ~ gm.trt * doy + (1|id) + (1 | plot), 
                data = subset(photo_traits, spp == "Mai" & ci > 0))
 
 # Check model assumptions
@@ -322,7 +324,7 @@ outlierTest(ci_mai)
 ci_mai_boot <- bootMer(
   ci_mai,
   predict_function,
-  nsim = 1000,
+  nsim = 150,
   type = "parametric")
 
 # Extract bootstrapped predictions
@@ -333,13 +335,13 @@ ci_mai_boot_preds <- ci_mai_boot$t
 # Combine bootstrapped predictions with doy and gm.trt descriptors
 full_ci_mai_boot_data <- data.frame(t(ci_mai_boot_preds)) %>% 
   cbind(trt_df_placeholder) %>%
-  dplyr::select(doy, gm.trt, X1:X1000) %>%
+  dplyr::select(doy, gm.trt, X1:X150) %>%
   mutate(spp = "Mai")
 head(full_ci_mai_boot_data)
 
 # Move bootstrap data to long-format for easy load into climate dataset
 ci_mai_boot_data_long <- full_ci_mai_boot_data %>%
-  pivot_longer(cols = X1:X1000, 
+  pivot_longer(cols = X1:X150, 
                names_to = "boot_iter", 
                values_to = "Ci_est")
 
