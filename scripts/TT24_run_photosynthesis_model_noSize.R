@@ -3,6 +3,9 @@ library(tidyverse)
 library(lubridate)
 library(ggpubr)
 
+## Color palettes
+gm.colors <- c("#00B2BE", "#F1B700")
+
 # Load photosynthesis model
 source("../functions/photosynthesis_model.R")
 
