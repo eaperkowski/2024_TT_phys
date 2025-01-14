@@ -47,6 +47,8 @@ densityPlot(residuals(vcmax25_tri))
 shapiro.test(residuals(vcmax25_tri))
 outlierTest(vcmax25_tri)
 
+Anova(vcmax25_tri)
+
 # Bootstrap model predictions to get 1000 Vcmax values per doy for
 # each of gm.trt == "ambient" and gm.trt == "weeded"
 vcmax25_tri_boot <- bootMer(
@@ -102,6 +104,8 @@ densityPlot(residuals(jmax25_tri))
 shapiro.test(residuals(jmax25_tri))
 outlierTest(jmax25_tri)
 
+Anova(jmax25_tri)
+
 # Bootstrap model predictions to get 1000 Jmax values per doy for
 # each of gm.trt == "ambient" and gm.trt == "weeded"
 jmax25_tri_boot <- bootMer(
@@ -155,14 +159,15 @@ densityPlot(residuals(ci_tri))
 shapiro.test(residuals(ci_tri))
 outlierTest(ci_tri)
 
+Anova(ci_tri)
+
 # Bootstrap model predictions to get 1000 Vcmax values per doy for
 # each of gm.trt == "ambient" and gm.trt == "weeded"
 ci_tri_boot <- bootMer(
   ci_tri,
   predict_function,
   nsim = 150,
-  type = "parametric"
-)
+  type = "parametric")
 
 # Extract bootstrapped predictions
 ci_tri_boot_preds <- ci_tri_boot$t  
@@ -209,6 +214,9 @@ qqline(residuals(vcmax25_mai))
 densityPlot(residuals(vcmax25_mai))
 shapiro.test(residuals(vcmax25_mai))
 outlierTest(vcmax25_mai)
+
+Anova(vcmax25_mai)
+
 
 # Bootstrap model predictions to get 1000 Vcmax values per doy for
 # each of gm.trt == "ambient" and gm.trt == "weeded"
@@ -262,6 +270,8 @@ qqline(residuals(jmax25_mai))
 densityPlot(residuals(jmax25_mai))
 shapiro.test(residuals(jmax25_mai))
 outlierTest(jmax25_mai)
+
+Anova(jmax25_mai)
 
 # Bootstrap model predictions to get 1000 Jmax values per doy for
 # each of gm.trt == "ambient" and gm.trt == "weeded"
@@ -318,6 +328,8 @@ qqline(residuals(ci_mai))
 densityPlot(residuals(ci_mai))
 shapiro.test(residuals(ci_mai))
 outlierTest(ci_mai)
+
+Anova(ci_mai)
 
 # Bootstrap model predictions to get 1000 Vcmax values per doy for
 # each of gm.trt == "ambient" and gm.trt == "weeded"

@@ -129,7 +129,7 @@ photo_traits <- photo_traits %>%
 #####################################################################
 # Anet - Tri
 #####################################################################
-anet_tri <- lmer(log(anet) ~ gm.trt * doy + (1:doy|id), 
+anet_tri <- lmer(log(anet) ~ gm.trt * doy + (1 | id), 
                  data = subset(photo_traits, spp == "Tri" & anet > 0))
 
 # Check model assumptions
@@ -633,7 +633,7 @@ cld(emmeans(jmax_mai_numbInt, pairwise~number_interval))
 #####################################################################
 photo_traits$vcmax25[c(281, 296, 452)] <- NA
 
-vcmax25_tri <- lmer(log(vcmax25) ~ gm.trt * doy + (1|id), 
+vcmax25_tri <- lmer(log(vcmax25) ~ gm.trt * doy + (1 | id) + (1 | plot), 
                     data = subset(photo_traits, spp == "Tri"))
 
 # Check model assumptions
@@ -681,7 +681,7 @@ vcmax25_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
   scale_x_continuous(limits = c(100, 170), breaks = seq(100, 170, 20)) +
-  scale_y_continuous(limits = c(0, 170), breaks = seq(0, 160, 40)) +
+  scale_y_continuous(limits = c(0, 180), breaks = seq(0, 180, 60)) +
   labs(x = "Day of year",
        y = expression(bold("V"["cmax25"]*" ("*mu*"mol"*" m"^"-2"*"s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -729,9 +729,9 @@ cld(emmeans(vcmax25_tri_numbInt, pairwise~gm.trt|number_interval))
 #####################################################################
 # Vcmax25 - Mai
 #####################################################################
-photo_traits$vcmax25[95] <- NA
+photo_traits$vcmax25[c(95, 99, 123)] <- NA
 
-vcmax25_mai <- lmer(log(vcmax25) ~ gm.trt * doy + (1|id), 
+vcmax25_mai <- lmer(log(vcmax25) ~ gm.trt * doy + (1 | id) + (1 | plot), 
                     data = subset(photo_traits, spp == "Mai"))
 
 # Check model assumptions
@@ -771,12 +771,12 @@ vcmax25_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.
               aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = vcmax25_mai_results,
-              aes(x = doy, y = response, ymin = response - SE, 
-                  ymax = response + SE, fill = gm.trt), alpha = 0.25) +
+              aes(x = doy, y = response, ymin = lower.CL, 
+                  ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
   scale_x_continuous(limits = c(120, 240), breaks = seq(120, 240, 30)) +
-  scale_y_continuous(limits = c(0, 170), breaks = seq(0, 160, 40)) +
+  scale_y_continuous(limits = c(0, 160), breaks = seq(0, 160, 40)) +
   labs(x = "Day of year",
        y = expression(bold("V"["cmax25"]*" ("*mu*"mol"*" m"^"-2"*"s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -828,7 +828,7 @@ cld(emtrends(vcmax25_mai_numbInt, ~gm.trt|number_interval, "doy"))
 #####################################################################
 photo_traits$jmax25[c(281, 296, 452)] <- NA
 
-jmax25_tri <- lmer(log(jmax25) ~ gm.trt * doy + (1|id), 
+jmax25_tri <- lmer(log(jmax25) ~ gm.trt * doy + (1 | id) + (1 | plot), 
                    data = subset(photo_traits, spp == "Tri"))
 
 # Check model assumptions
@@ -873,7 +873,7 @@ jmax25_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.t
                   ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
-  scale_y_continuous(limits = c(0, 210), breaks = seq(0, 200, 50)) + 
+  scale_y_continuous(limits = c(0, 250), breaks = seq(0, 250, 50)) + 
   labs(x = "Day of year",
        y = expression(bold("J"["max25"]*" ("*mu*"mol"*" m"^"-2"*"s"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
@@ -916,10 +916,8 @@ test(emtrends(jmax25_tri_numbInt, pairwise~gm.trt, "doy"))
 #####################################################################
 # Jmax25 - Mai
 #####################################################################
-photo_traits$jmax25[9] <- NA
-
-jmax25_mai <- lmer(log(jmax25) ~ gm.trt * doy + (1|id), 
-                   data = subset(photo_traits, spp == "Mai"))
+jmax25_mai <- lmer(log(jmax25) ~ gm.trt * doy + (1|id) + (1 | plot), 
+                   data = subset(photo_traits, spp == "Mai" & ci > 0))
 
 # Check model assumptions
 plot(jmax25_mai)
@@ -1010,24 +1008,122 @@ cld(emtrends(jmax25_mai_numbInt, ~gm.trt|number_interval, "doy"))
 ## treatment in larger size classes
 
 #####################################################################
+# Ci - Tri ignoring size classes
+#####################################################################
+ci_tri <- lmer(ci ~ gm.trt * doy + (1|id) + (1 | plot), 
+               data = subset(photo_traits, spp == "Tri" & ci > 0))
+
+# Check model assumptions
+plot(ci_tri)
+qqnorm(residuals(ci_tri))
+qqline(residuals(ci_tri))
+densityPlot(residuals(ci_tri))
+shapiro.test(residuals(ci_tri))
+outlierTest(ci_tri)
+
+# Model output
+summary(ci_tri)
+Anova(ci_tri)
+r.squaredGLMM(ci_tri)
+
+# Pairwise comparisons
+test(emtrends(ci_tri, pairwise~gm.trt, "doy"))
+## Stronger positive effect of DOY in weeded treatment
+
+# Plot prep
+ci_tri_results <- data.frame(
+  emmeans(ci_tri, ~gm.trt, "doy", at = list(doy = seq(100, 170, 1))))
+
+# Plot
+ci_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.trt) & ci > 0), 
+                      aes(x = doy, y = ci, fill = gm.trt)) +
+  geom_line(aes(group = id), alpha = 0.1) +
+  geom_point(size = 2.5, shape = 21, alpha = 0.7) +
+  geom_smooth(data = ci_tri_results,
+              aes(x = doy, y = emmean, color = gm.trt),
+              se = FALSE, linewidth = 1.5) +
+  geom_ribbon(data = ci_tri_results,
+              aes(x = doy, y = emmean, ymin = lower.CL, 
+                  ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
+  scale_fill_manual(values = gm.colors) +
+  scale_color_manual(values = gm.colors) +
+  scale_y_continuous(limits = c(100, 400), breaks = seq(100, 400, 100)) +
+  labs(x = "Day of year",
+       y = expression(bold("C"["i"]*" ("*mu*"mol"*" mol"^"-1"*")")),
+       fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
+       color = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "italic"),
+        panel.grid.minor.y = element_blank())
+ci_tri_plot
+
+#####################################################################
+# Ci - Mai ignoring size classes
+#####################################################################
+photo_traits$ci[c(367, 392, 790, 791, 820)] <- NA
+photo_traits$ci[c(171, 393, 450, 850)] <- NA
+
+ci_mai <- lmer(ci ~ gm.trt * doy + (1 | id) + (1 | plot), 
+               data = subset(photo_traits, spp == "Mai" & ci > 0))
+
+# Check model assumptions
+plot(ci_mai)
+qqnorm(residuals(ci_mai))
+qqline(residuals(ci_mai))
+densityPlot(residuals(ci_mai))
+shapiro.test(residuals(ci_mai))
+outlierTest(ci_mai)
+
+# Model output
+summary(ci_mai)
+Anova(ci_mai)
+r.squaredGLMM(ci_mai)
+
+# Plot prep
+ci_mai_results <- data.frame(
+  emmeans(ci_mai, ~gm.trt, "doy", at = list(doy = seq(120, 240, 1))))
+
+# Plot
+ci_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.trt) & ci > 0), 
+                          aes(x = doy, y = ci, fill = gm.trt)) +
+  geom_line(aes(group = id), alpha = 0.1) +
+  geom_point(size = 2.5, shape = 21, alpha = 0.7) +
+  geom_smooth(data = ci_mai_results,
+              aes(x = doy, y = emmean, color = gm.trt),
+              se = FALSE, linewidth = 1.5) +
+  geom_ribbon(data = ci_mai_results,
+              aes(x = doy, y = emmean, ymin = lower.CL, 
+                  ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
+  scale_fill_manual(values = gm.colors) +
+  scale_color_manual(values = gm.colors) +
+  scale_x_continuous(limits = c(120, 240), breaks = seq(120, 240, 30)) +
+  scale_y_continuous(limits = c(100, 400), breaks = seq(100, 400, 100)) +
+  labs(x = "Day of year",
+       y = expression(bold("C"["i"]*" ("*mu*"mol"*" mol"^"-1"*")")),
+       fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
+       color = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "italic"),
+        panel.grid.minor.y = element_blank())
+ci_mai_plot
+
+
+#####################################################################
 # Compile plots
 #####################################################################
-png("../drafts/figs/TT24_temp_standardized_vcmax_jmax.png", width = 10, height = 10,
-    units = "in", res = 600)
-ggarrange(vcmax25_tri_plot, vcmax25_mai_plot,
-          jmax25_tri_plot, jmax25_mai_plot,
-          nrow = 2, ncol = 2, common.legend = T, legend = "bottom")
+png("../drafts/figs/TT24_temp_standardized_vcmax_jmax.png", 
+    width = 16, height = 10, units = "in", res = 600)
+ggarrange(vcmax25_tri_plot, jmax25_tri_plot, ci_tri_plot,
+          vcmax25_mai_plot, jmax25_mai_plot, ci_mai_plot,
+          nrow = 2, ncol = 3, common.legend = TRUE, legend = "bottom")
 dev.off()
-
-
-png("../data/TT24_temp_standardized_vcmax_jmax.png", width = 10, height = 10,
-    units = "in", res = 600)
-ggarrange(vcmax25_tri_plot, vcmax25_mai_plot,
-          jmax25_tri_plot, jmax25_mai_plot,
-          nrow = 2, ncol = 2, common.legend = T, legend = "bottom")
-dev.off()
-
-
-
 
 

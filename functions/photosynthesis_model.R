@@ -94,12 +94,13 @@ photosynthesis <- function(temp_c = 25,
                            ci = 400,
                            par = 800,
                            patm = 101325,
-                           q0 = 0.257, 
-                           theta = 0.85,
+                           q0 = 0.257, # Quantum yield of electron transport, from Smith et al. (2019)
+                           theta = 0.85, # Distribution of light intensity relative to distribution of photosynthetic capacity,
+                                         # from Smith et al. (2019)
                            vcmax25 = 100, 
                            jmax25 = 200) {
   
-  #  Michaelis-Menton coefs and gammastar
+  #  Michaelis-Menton coefs and gammastar from temp eqs. from Bernacchi et al. (2001)
   km <- calc_km_pa(temp_c)
   gammastar <- calc_gammastar_pa(temp_c)
   
@@ -111,11 +112,11 @@ photosynthesis <- function(temp_c = 25,
   ci_pa <- ci * 1e-6 * patm
   
   # Ac
-  mc <- (( ci_pa - gammastar) / ( ci_pa + km))
+  mc <- ((ci_pa - gammastar) / (ci_pa + km))
   ac <- vcmax * mc
   
   # Aj
-  m <- (( ci_pa - gammastar) / ( ci_pa + (2 * gammastar)))
+  m <- ((ci_pa - gammastar) / ( ci_pa + (2 * gammastar)))
   aj <- (m / 4) * (q0 * par + jmax - sqrt((q0 * par + jmax)^2 - (4 * theta * q0 * par * jmax))) / (2 * theta)
 
   # Anet is the minimum of Ac and Aj
