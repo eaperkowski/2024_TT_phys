@@ -329,7 +329,7 @@ mai_C_resp_plot <- ggplot(data = subset(daily_model_results,
                                         spp == "Mai" & daily_C_assim > 0 & n_measurements > 3 &
                                           doy > 110 & doy < 250),
                           aes(x = doy, y = daily_C_resp)) +
-  geom_rect(aes(xmin = 125, xmax = 170, ymin = -Inf, ymax = Inf),
+  geom_rect(aes(xmin = 125, xmax = 250, ymin = -Inf, ymax = Inf),
             alpha = 0.8, fill = "#ECECEC") +
   geom_point(aes(fill = gm.trt), shape = 21, size = 2, alpha = 0.7) +
   scale_color_manual(values = gm.colors) +
@@ -340,7 +340,7 @@ mai_C_resp_plot <- ggplot(data = subset(daily_model_results,
        y = expression(bold("Daily C respiration (g C m"^"-2"*" d"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
        color = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
-  facet_grid(~spp, labeller = labeller(spp = facet_lab_tri)) +
+  facet_grid(~spp, labeller = labeller(spp = facet_lab_mai)) +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         strip.background = element_blank(),
