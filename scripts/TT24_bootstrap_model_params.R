@@ -36,7 +36,7 @@ set.seed(10)
 #####################################################################
 photo_traits$vcmax25[c(281, 296, 452)] <- NA
 
-vcmax25_tri <- lmer(log(vcmax25) ~ gm.trt * doy + (1|id) + (1 | plot), 
+vcmax25_tri <- lmer(log(vcmax25) ~ gm.trt * doy + (1 | id) + (1 | plot), 
                     data = subset(photo_traits, spp == "Tri" & ci > 0))
 
 # Check model assumptions
