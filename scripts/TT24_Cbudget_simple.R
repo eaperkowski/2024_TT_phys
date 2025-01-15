@@ -329,12 +329,12 @@ mai_C_resp_plot <- ggplot(data = subset(daily_model_results,
                                         spp == "Mai" & daily_C_assim > 0 & n_measurements > 3 &
                                           doy > 110 & doy < 250),
                           aes(x = doy, y = daily_C_resp)) +
-  # geom_rect(aes(xmin = 125, xmax = 170, ymin = -Inf, ymax = Inf),
-  #           alpha = 0.8, fill = "#ECECEC") +
+  geom_rect(aes(xmin = 125, xmax = 170, ymin = -Inf, ymax = Inf),
+            alpha = 0.8, fill = "#ECECEC") +
   geom_point(aes(fill = gm.trt), shape = 21, size = 2, alpha = 0.7) +
   scale_color_manual(values = gm.colors) +
   scale_fill_manual(values = gm.colors) +
-  scale_y_continuous(limits = c(0, 2), breaks = seq(0, 2, 0.5)) +
+  scale_y_continuous(limits = c(0, 2.5), breaks = seq(0, 2.5, 0.5)) +
   scale_x_continuous(limits = c(110, 250), breaks = seq(110, 250, 20)) +
   labs(x = "Day of year",
        y = expression(bold("Daily C respiration (g C m"^"-2"*" d"^"-1"*")")),
@@ -356,13 +356,13 @@ mai_netC_assim_tla_plot <- ggplot(data = subset(daily_model_results,
   geom_point(aes(fill = gm.trt), shape = 21, size = 2, alpha = 0.7) +
   scale_color_manual(values = gm.colors) +
   scale_fill_manual(values = gm.colors) +
-  scale_y_continuous(limits = c(0, 0.4), breaks = seq(0, 0.4, 0.1)) +
+  scale_y_continuous(limits = c(0, 0.5), breaks = seq(0, 0.5, 0.1)) +
   scale_x_continuous(limits = c(110, 250), breaks = seq(110, 250, 20)) +
   labs(x = "Day of year",
        y = expression(bold("Daily net C assimilation (g C d"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
        color = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
-  facet_grid(~spp, labeller = labeller(spp = facet_lab_tri)) +
+  facet_grid(~spp, labeller = labeller(spp = facet_lab_mai)) +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         strip.background = element_blank(),
@@ -373,18 +373,18 @@ mai_C_assim_tla_plot <- ggplot(data = subset(daily_model_results,
                                              spp == "Mai" & daily_C_assim > 0 & n_measurements > 3 &
                                                doy > 110 & doy < 250),
                                aes(x = doy, y = daily_netC_assim_tla)) +
-  geom_rect(aes(xmin = 125, xmax = 170, ymin = -Inf, ymax = Inf),
+  geom_rect(aes(xmin = 125, xmax = 250, ymin = -Inf, ymax = Inf),
             alpha = 0.8, fill = "#ECECEC") +
   geom_point(aes(fill = gm.trt), shape = 21, size = 2, alpha = 0.7) +
   scale_color_manual(values = gm.colors) +
   scale_fill_manual(values = gm.colors) +
-  scale_y_continuous(limits = c(0, 0.4), breaks = seq(0, 0.4, 0.1)) +
+  scale_y_continuous(limits = c(0, 0.5), breaks = seq(0, 0.5, 0.1)) +
   scale_x_continuous(limits = c(110, 250), breaks = seq(110, 250, 20)) +
   labs(x = "Day of year",
        y = expression(bold("Daily C assimilation (g C d"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
        color = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
-  facet_grid(~spp, labeller = labeller(spp = facet_lab_tri)) +
+  facet_grid(~spp, labeller = labeller(spp = facet_lab_mai)) +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         strip.background = element_blank(),
@@ -395,18 +395,18 @@ mai_C_resp_tla_plot <- ggplot(data = subset(daily_model_results,
                                             spp == "Mai" & daily_C_assim > 0 & n_measurements > 3 &
                                               doy > 110 & doy < 250),
                               aes(x = doy, y = daily_netC_assim_tla)) +
-  geom_rect(aes(xmin = 125, xmax = 170, ymin = -Inf, ymax = Inf),
+  geom_rect(aes(xmin = 125, xmax = 250, ymin = -Inf, ymax = Inf),
             alpha = 0.8, fill = "#ECECEC") +
   geom_point(aes(fill = gm.trt), shape = 21, size = 2, alpha = 0.7) +
   scale_color_manual(values = gm.colors) +
   scale_fill_manual(values = gm.colors) +
-  scale_y_continuous(limits = c(0, 0.08), breaks = seq(0, 0.08, 0.02)) +
+  scale_y_continuous(limits = c(0, 0.5), breaks = seq(0, 0.5, 0.1)) +
   scale_x_continuous(limits = c(110, 250), breaks = seq(110, 250, 20)) +
   labs(x = "Day of year",
        y = expression(bold("Daily C respiration (g C d"^"-1"*")")),
        fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
        color = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
-  facet_grid(~spp, labeller = labeller(spp = facet_lab_tri)) +
+  facet_grid(~spp, labeller = labeller(spp = facet_lab_mai)) +
   theme_classic(base_size = 18) +
   theme(axis.title = element_text(face = "bold"),
         strip.background = element_blank(),
