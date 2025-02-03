@@ -9,6 +9,7 @@ library(lme4)
 library(emmeans)
 library(car)
 library(ggpubr)
+library(mgcv)
 
 # Load photosynthesis model
 source("../functions/photosynthesis_model.R")
@@ -147,6 +148,18 @@ head(daily_model_results)
 # Check that cumsum() worked
 filter(daily_model_results, id == 9412)
 
+# Change gm.trt to a factor
+daily_model_results$gm.trt <- factor(daily_model_results$gm.trt, levels = c("ambient", "weeded"))
+
+## Test out gam function
+test_gam <- gam(daily_netC_assim ~ gm.trt + s(doy, by = gm.trt), 
+                data = subset(daily_model_results, spp == "Tri"), method = "REML")
+
+summary(test_gam)
+
+plot(test_gam)
+
+daily_model_results$gm.trt <- factor(daily_model_results$gm.trt, levels = c("ambient", "weeded"))
 #####################################################################
 # Trillium plots
 #####################################################################
