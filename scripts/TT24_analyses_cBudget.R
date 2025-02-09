@@ -112,22 +112,110 @@ ggplot(data = subset(c_budget, spp == "Tri" & doy < 170 & !is.na(gm.trt)),
 
 
 #####################################################################
-# Trillium GAM for cumulative daily C assimilation (g C / m2 / day)
+# Trillium GAM for net daily C assimilation (g C / m2 / day)
 #####################################################################
 
-cumul_netC_tri <- gam(cumul_netC_assim ~ gm.trt +
-                        s(doy, k = 3) +
-                        s(doy, by = gm.trt, k = 3) +
+daily_netC_mai <- gam(daily_netC_assim ~ gm.trt +
+                        s(doy, k = 4) +
+                        s(doy, by = gm.trt, k = 4) +
                         s(id, bs = "re"),
-                      data = subset(c_budget, spp == "Tri" & doy < 170),
+                      data = subset(c_budget, spp == "Mai", daily_netC_assim > -1),
                       model = "REML")
 
 # Model results
-summary(cumul_netC_tri)
+summary(daily_netC_mai)
 
 # Some patterns
-test(emtrends(cumul_netC_tri, ~1, "doy"))
-test(emtrends(cumul_netC_tri, pairwise~gm.trt, "doy"))
+test(emtrends(daily_netC_mai, ~1, "doy"))
+test(emtrends(daily_netC_mai, pairwise~gm.trt, "doy"))
+
+# Prepare regression line for plot
+daily_netC_mai_regline <- data.frame(
+  emmeans(
+    daily_netC_tri, ~gm.trt, "doy", at = list(doy = seq(120, 240, 1))))
+
+
+# Plot
+ggplot(data = subset(c_budget, spp == "Mai" & !is.na(gm.trt) & 
+                       daily_netC_assim > -1 & doy > 120 & doy < 240),
+       aes(x = doy, y = daily_netC_assim)) +
+  geom_point(aes(fill = gm.trt), shape = 21, alpha = 0.7, size = 2) +
+  geom_ribbon(data = daily_netC_mai_regline,
+              aes(x = doy, y = emmean, ymin = lower.CL, ymax = upper.CL,
+                  fill = gm.trt), alpha = 0.5) +
+  geom_line(data = daily_netC_mai_regline,
+            aes(x = doy, y = emmean, color = gm.trt), linewidth = 1) +
+  scale_color_manual(values = gm.colors) +
+  scale_fill_manual(values = gm.colors) +
+  scale_y_continuous(limits = c(-1, 4), breaks = seq(0, 4, 1)) +
+  labs(x = "Day of year",
+       y = expression(bold("Net daily C assimilation (g C m"^"-2"*" d"^"-1"*")")),
+       fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
+       color = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"))
+
+#####################################################################
+# Trillium GAM for net daily C assimilation accounting for leaf/plant
+# size (g C / day)
+#####################################################################
+daily_netC_tla_mai <- gam(daily_netC_assim_tla ~ gm.trt + 
+                            s(doy, k = 3) +
+                            s(doy, by = gm.trt, k = 3) + 
+                            s(id, bs = "re"), 
+                          data = subset(c_budget, spp == "Mai"),
+                          model = "REML")
+
+# Model results
+summary(daily_netC_tla_mai)
+anova(daily_netC_tla_mai)
+
+# Let's look at some trends
+test(emtrends(daily_netC_tla_mai, ~1, "doy"))
+test(emtrends(daily_netC_tla_mai, pairwise~gm.trt, "doy"))
+
+# Prepare regression line for plot
+daily_netC_tla_mai_regline <- data.frame(
+  emmeans(
+    daily_netC_tla_mai, ~gm.trt, "doy", at = list(doy = seq(120, 240, 1))))
+
+# Plot
+ggplot(data = subset(c_budget, spp == "Mai" & !is.na(gm.trt) & 
+                       daily_netC_assim > -1 & doy > 120 & doy < 240),
+       aes(x = doy, y = daily_netC_assim_tla)) +
+  geom_point(aes(fill = gm.trt), shape = 21, alpha = 0.7, size = 2) +
+  geom_ribbon(data = daily_netC_tla_mai_regline,
+              aes(x = doy, y = emmean, ymin = lower.CL, ymax = upper.CL,
+                  fill = gm.trt), alpha = 0.5) +
+  geom_line(data = daily_netC_tla_mai_regline,
+            aes(x = doy, y = emmean, color = gm.trt), linewidth = 1) +
+  scale_color_manual(values = gm.colors) +
+  scale_fill_manual(values = gm.colors) +
+  scale_y_continuous(limits = c(-0.02, 0.4), breaks = seq(0, 0.4, 0.1)) +
+  labs(x = "Day of year",
+       y = expression(bold("Total net daily C assimilation (g C d"^"-1"*")")),
+       fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
+       color = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"))
+
+#####################################################################
+# Trillium GAM for cumulative daily C assimilation (g C / m2 / day)
+#####################################################################
+
+cumul_netC_mai <- gam(cumul_netC_assim ~ gm.trt +
+                        s(doy, k = 3) +
+                        s(doy, by = gm.trt, k = 3) +
+                        s(id, bs = "re"),
+                      data = subset(c_budget, spp == "Mai"),
+                      model = "REML")
+
+# Model results
+summary(cumul_netC_mai)
+
+# Some patterns
+test(emtrends(cumul_netC_mai, ~1, "doy"))
+test(emtrends(cumul_netC_mai, pairwise~gm.trt, "doy"))
 
 # Prepare regression line for plot
 daily_netC_tri_regline <- data.frame(
