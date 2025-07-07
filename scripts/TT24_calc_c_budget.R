@@ -35,21 +35,29 @@ head(weather)
 
 # Read in compiled trait dataset
 photo_traits <- read.csv("../data/TT24_photo_traits.csv") %>%
-  mutate(doy_photo = doy) %>%
+  mutate(doy_photo = doy,
+         date_photo = date,
+         ci = ifelse(ci < 150, 290, ci)) %>%
   group_by(id) %>%
   mutate(doy_max = max(doy)) %>%
-  dplyr::select(-doy)
+  dplyr::select(-doy, -date)
 head(photo_traits)
 
 # How many measurements per ID?
 n_measurements <- photo_traits %>%
   group_by(id, spp, plot, subplot, gm.trt) %>%
   summarize(n_measurements = length(id)) %>%
-  arrange(n_measurements)
+  ungroup() %>%
+  dplyr::select(id, n_meas = n_measurements)
 head(n_measurements)
 
+# How many IDs have >2 measurements?
+count(filter(n_measurements, n_meas > 2))
+
+# Unique IDs
 id <- unique(photo_traits$id)
 
+# ID with DOY photo and DOY max
 photo_traits_doy <- photo_traits %>%
   dplyr::select(id, doy_photo, doy_max)
 head(photo_traits_doy)
@@ -67,16 +75,14 @@ weather_photo_merged <- weather %>%
   left_join(photo_traits_doy, by = "id", relationship = "many-to-many") %>%
   left_join(photo_traits, by = c("id", "doy_photo", "doy_max")) %>%
   mutate(time_diff = abs(doy - doy_photo)) %>%
-    group_by(doy, id) %>%
-    filter(time_diff == min(time_diff)) %>% # Keep the closest measurement
-    ungroup() %>%
-    dplyr::select(-time_diff, date_time, weather_date = date.x, time:patm, tavg10_weather = tavg10.x, 
-           machine, photo_date = date.y, doy_photo, doy_max, id,spp:Tleaf, tavg10_vcmax25 = tavg10.y,
-           init_leaf_length_cm:init_leaf_area, -(vp10:vpd10), -anet, -vcmax, -jmax, -rd) 
+  group_by(doy, id) %>%
+  filter(time_diff == min(time_diff)) %>% # Keep the closest measurement
+  ungroup() %>%
+  dplyr::select(-time_diff, date_time, time:patm, tavg10_weather = tavg10.x, 
+                machine, doy_photo, doy_max, id,spp:Tleaf, tavg10_vcmax25 = tavg10.y,
+                init_leaf_length_cm:init_leaf_area, -(vp10:vpd10), -anet, -vcmax, -jmax, -rd) %>%
+  left_join(n_measurements, by = "id")
 head(weather_photo_merged)
-
-# check to make sure different leaf areas are included for sample ID
-test <- filter(weather_photo_merged, id == "1021")
 
 #####################################################################
 # Run photosynthesis model!
@@ -95,14 +101,17 @@ hourly_model_results <- cbind(weather_photo_merged, model_results)
 head(hourly_model_results)
 
 # Remove repeat cols (Vcmax, Jmax, Ci)
-hourly_model_results <- hourly_model_results[, -c(35:37, 39)]
+hourly_model_results <- hourly_model_results[, -c(36, 38, 40, 43:44)]
+
+names(hourly_model_results)
 
 #####################################################################
-# Convert A, Rd, and Anet from umol/m2/s to g C/ms/s, then to
-# g C / day
+# Convert A, Rd, and Anet from umol/m2/s to g C/hr, filter to only
+# include individuals that have greater than 2 gas exchange measurements
 #####################################################################
 hourly_model_results <- hourly_model_results %>%
-  mutate(hourly_C_assim = a * 3600 / 1e6 * 12,
+  filter(n_meas > 2) %>%
+  mutate(hourly_C_assim = a * 3600 / 1e6 * 12, # gC per hour
          hourly_C_resp = rd * 3600 / 1e6 * 12,
          hourly_netC_assim = anet * 3600 / 1e6 * 12) %>%
   mutate(hourly_C_assim_tla = hourly_C_assim * (total_leaf_area_cm2 / 10000),
@@ -112,41 +121,47 @@ hourly_model_results <- hourly_model_results %>%
 #####################################################################
 # Calculate total daily C estimates
 #####################################################################
+# Calculate daily carbon budgets
 daily_model_results <- hourly_model_results %>%
-  group_by(doy, id, spp, plot, subplot, gm.trt) %>%
-  summarize(daily_C_assim = sum(hourly_C_assim, na.rm = TRUE),
-            daily_C_resp = sum(hourly_C_resp, na.rm = TRUE),
-            daily_netC_assim = sum(hourly_netC_assim, na.rm = TRUE),
+  group_by(doy, id, spp, plot, subplot, gm.trt, n_meas) %>%
+  summarize(daily_c_assim = sum(hourly_C_assim, na.rm = TRUE),
+            daily_c_resp = sum(hourly_C_resp, na.rm = TRUE),
+            daily_netc_assim = sum(hourly_netC_assim, na.rm = TRUE),
             
-            daily_C_assim_tla = sum(hourly_C_assim_tla, na.rm = TRUE),
-            daily_C_resp_tla = sum(hourly_C_resp_tla, na.rm = TRUE),
-            daily_netC_assim_tla = sum(hourly_netC_assim_tla, na.rm = TRUE)) %>%
-  ungroup(doy) %>%
-  mutate(cumul_C_assim = cumsum(daily_C_assim) / max(daily_C_assim),
-         cumul_C_resp = cumsum(daily_C_resp) / max(daily_C_resp),
-         cumul_netC_assim = cumsum(daily_netC_assim)/ max(daily_netC_assim),
+            daily_c_assim_tla = sum(hourly_C_assim_tla, na.rm = TRUE),
+            daily_c_resp_tla = sum(hourly_C_resp_tla, na.rm = TRUE),
+            daily_netc_assim_tla = sum(hourly_netC_assim_tla, na.rm = TRUE))
+
+daily_model_results <- daily_model_results %>%
+  arrange(id, doy) %>%
+  group_by(id, spp, plot, subplot, gm.trt, n_meas) %>%
+  mutate(cumul_c_assim = cumsum(daily_c_assim),
+         cumul_c_resp = cumsum(daily_c_resp),
+         cumul_netc_assim = cumsum(daily_netc_assim),
          
-         cumul_C_assim_tla = cumsum(daily_C_assim_tla),
-         cumul_C_resp_tla = cumsum(daily_C_resp_tla),
-         cumul_netC_assim_tla = cumsum(daily_netC_assim_tla)) %>%
-  left_join(n_measurements)
-head(daily_model_results)
+         cumul_c_assim_tla = cumsum(daily_c_assim_tla),
+         cumul_c_resp_tla = cumsum(daily_c_resp_tla),
+         cumul_netc_assim_tla = cumsum(daily_netc_assim_tla))
 
-# Figure out maximum C assim for each id
-daily_model_results %>%
-  group_by(id, spp, plot, subplot, gm.trt) %>%
-  summarize(max_cumul_C_assim = max(cumul_C_assim),
-            max_cumul_C_resp = max(cumul_C_resp),
-            max_cumul_netC_assim = max(cumul_netC_assim),
+# Calculate total seasonal C budget
+total_c_budget <- daily_model_results %>%
+  group_by(id, spp, plot, subplot, gm.trt, n_meas) %>%
+  summarize(total_c_assim = sum(daily_c_assim),
+            total_c_resp = sum(daily_c_resp),
+            total_netc_assim = sum(daily_netc_assim),
             
-            max_cumul_C_assim_tla = max(cumul_C_assim_tla),
-            max_cumul_C_resp_tla = max(cumul_C_resp_tla),
-            max_cumul_netC_assim_tla = max(cumul_netC_assim_tla),
+            total_c_assim_tla = sum(daily_c_assim_tla),
+            total_c_resp_tla = sum(daily_c_resp_tla),
+            total_netc_assim_tla = sum(daily_netc_assim_tla)
+            )
 
+# Merge total seasonal C budget with daily model results
+full_model_results <- daily_model_results %>%
+  full_join(total_c_budget) %>%
+  mutate(prop_c_assim = cumul_c_assim / total_c_assim)
 
-
-# Check that cumsum() worked
-filter(daily_model_results, id == 9412)
-
-# Write daily model results to .csv
-write.csv(daily_model_results, "../data/c_budget/TT24_cBudget_data.csv", row.names = F)
+# Write total C budget model results to .csv
+total_c_budget %>%
+  mutate(sample_year = 2024) %>%
+  write.csv("../data/c_budget/TT24_seasonal_c_budget.csv", 
+            row.names = F)
