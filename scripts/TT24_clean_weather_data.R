@@ -1,7 +1,5 @@
 # TT24_compile_datasheet.R
-# R script that 
-
-merges A/Ci curve parameters with snapshot
+# R script that merges A/Ci curve parameters with snapshot
 # photosynthesis data and multispeq data. Script also uses weather 
 # station data to correct Vcmax and Jmax to temperature-standardized
 # estimates (i.e., to a standard leaf temp of 25degC)

@@ -52,7 +52,7 @@ daily_netC_tri_regline <- data.frame(
 daily_netC_tri_plot <- ggplot(
   data = subset(c_budget, spp == "Tri" & doy < 170 & !is.na(gm.trt)),
   aes(x = doy, y = daily_netC_assim)) +
-  geom_point(aes(fill = gm.trt), shape = 21, alpha = 0.7, size = 2) +
+  geom_point(aes(fill = gm.trt), shape = 21, alpha = 0.3, size = 2) +
   geom_ribbon(data = daily_netC_tri_regline,
               aes(x = doy, y = emmean, ymin = lower.CL, ymax = upper.CL,
                   fill = gm.trt), alpha = 0.5) +
@@ -101,7 +101,7 @@ daily_netC_tla_tri_regline <- data.frame(
 daily_netC_tla_tri_plot <- ggplot(
   data = subset(c_budget, spp == "Tri" & doy < 170 & !is.na(gm.trt)),
   aes(x = doy, y = daily_netC_assim_tla)) +
-  geom_point(aes(fill = gm.trt), shape = 21, alpha = 0.7, size = 2) +
+  geom_point(aes(fill = gm.trt), shape = 21, alpha = 0.3, size = 2) +
   geom_ribbon(data = daily_netC_tla_tri_regline,
               aes(x = doy, y = emmean, ymin = lower.CL, ymax = upper.CL,
                   fill = gm.trt), alpha = 0.5) +
@@ -147,7 +147,7 @@ daily_netC_mai_regline <- data.frame(
 daily_netC_mai_plot <- ggplot(data = subset(c_budget, spp == "Mai" & !is.na(gm.trt) & 
                        daily_netC_assim > 0 & doy > 120 & doy < 240),
        aes(x = doy, y = daily_netC_assim)) +
-  geom_point(aes(fill = gm.trt), shape = 21, alpha = 0.7, size = 2) +
+  geom_point(aes(fill = gm.trt), shape = 21, alpha = 0.3, size = 2) +
   geom_ribbon(data = daily_netC_mai_regline,
               aes(x = doy, y = response, ymin = asymp.LCL, ymax = asymp.UCL,
                   fill = gm.trt), alpha = 0.5) +
@@ -197,7 +197,7 @@ daily_netC_tla_mai_plot <- ggplot(
   data = subset(c_budget, spp == "Mai" & !is.na(gm.trt) & 
                   daily_netC_assim > 0 & doy > 120 & doy < 240),
        aes(x = doy, y = daily_netC_assim_tla)) +
-  geom_point(aes(fill = gm.trt), shape = 21, alpha = 0.7, size = 2) +
+  geom_point(aes(fill = gm.trt), shape = 21, alpha = 0.3, size = 2) +
   geom_ribbon(data = daily_netC_tla_mai_regline,
               aes(x = doy, y = emmean, ymin = lower.CL, ymax = upper.CL,
                   fill = gm.trt), alpha = 0.5) +

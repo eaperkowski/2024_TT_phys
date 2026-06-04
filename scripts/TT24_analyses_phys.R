@@ -19,6 +19,8 @@ library(ggpubr)
 
 # Read .csv file
 photo_traits <- read.csv("../data/TT24_photo_traits.csv")
+cbudget <- read.csv("../data/c_budget/TT24_seasonal_c_budget.csv") %>%
+  mutate(gm.trt = factor(gm.trt, levels = c("weeded", "ambient")))
 
 # Add code for facet labels
 facet.labs <- c("Trillium spp.", "M. racemosum")
@@ -27,113 +29,11 @@ names(facet.labs) <- c("Tri", "Mai")
 # Color palettes
 gm.colors <- c("#00B2BE", "#F1B700")
 
-
-#####################################################################
-# Discretize size distribution into 5 size classes - Trillium
-#####################################################################
-# Visualize Trillium size distribution
-ggplot(data = subset(distinct(photo_traits, id, .keep_all = T), spp == "Tri"),
-       aes(x = init_leaf_area)) +
-  geom_histogram(aes(y = (after_stat(count)/sum(after_stat(count)))), 
-                 bins = 5, fill = "gray", colour = "black") +
-  labs(x = expression("Initial total leaf area (cm"^"2"*")"),
-       y = "Relative Frequency") +
-  theme_classic(base_size = 18)
-
-# Create data frame that includes two options for bin ranges
-tri_intervals <- data.frame(
-  id = subset(
-    distinct(photo_traits, id, .keep_all = T), spp == "Tri")$id,
-  
-  spp = "Tri",
-  
-  init_leaf_area = subset(
-    distinct(photo_traits, id, .keep_all = T), spp == "Tri")$init_leaf_area,
-  
-  # bin ranges if the range of total leaf area is equally 
-  # divided into 5 bins
-  range_interval = cut_interval(
-    x = subset(distinct(photo_traits, id, .keep_all = T), 
-               spp == "Tri")$init_leaf_area, n = 5),
-  
-  # bin ranges if the number of individuals are equally 
-  # divided into 5 bins
-  number_interval = cut_number(
-    x = subset(distinct(photo_traits, id, .keep_all = T), 
-               spp == "Tri")$init_leaf_area, n = 5))
-
-# Bin ranges if total leaf area is equally divided into 5 bins
-unique(tri_intervals$range_interval)
-# Levels: [53.4-167], [167-280], [280-394], [394-507], [507-621]
-
-# Bin ranges such that each bin contains the same number of inds
-unique(tri_intervals$number_interval)
-# Levels: [53.4-99.7], [99.7-142], [142-203], [203-322], [322-621]
-
-
-#####################################################################
-# Discretize size distribution into 5 size classes - Maianthemum
-#####################################################################
-# Visualize Trillium size distribution
-ggplot(data = subset(distinct(photo_traits, id, .keep_all = T), spp == "Mai"),
-       aes(x = init_leaf_area)) +
-  geom_histogram(aes(y = (after_stat(count)/sum(after_stat(count)))), 
-                 bins = 5, fill = "gray", colour = "black") +
-  labs(x = expression("Initial total leaf area (cm"^"2"*")"),
-       y = "Relative Frequency") +
-  theme_classic(base_size = 18)
-
-# Create data frame that includes two options for bin ranges
-mai_intervals <- data.frame(
-  id = subset(
-    distinct(photo_traits, id, .keep_all = T), spp == "Mai")$id,
-  
-  spp = "Mai",
-  
-  init_leaf_area = subset(
-    distinct(photo_traits, id, .keep_all = T), spp == "Mai")$init_leaf_area,
-  
-  # bin ranges if the range of total leaf area is equally 
-  # divided into 5 bins
-  range_interval = cut_interval(
-    x = subset(distinct(photo_traits, id, .keep_all = T), 
-               spp == "Mai")$init_leaf_area, n = 5),
-  
-  # bin ranges if the number of individuals are equally 
-  # divided into 5 bins
-  number_interval = cut_number(
-    x = subset(distinct(photo_traits, id, .keep_all = T), 
-               spp == "Mai")$init_leaf_area, n = 5))
-
-# Bin ranges if total leaf area is equally divided into 5 bins
-unique(mai_intervals$range_interval)
-# Levels: [59.8-271], [271-483], [483-695], [695-906], [906-1120]
-
-# Bin ranges such that each bin contains the same number of inds
-unique(mai_intervals$number_interval)
-# Levels: [59.8-201], [201-349], [349-554], [554-673], [673-1120]
-
-#####################################################################
-# Merge Tri and Mai intervals and join with photo_traits
-#####################################################################
-
-# Merge Tri and Mai intervals
-intervals <- tri_intervals %>%
-  full_join(mai_intervals)
-
-# Join with photo_traits
-photo_traits <- photo_traits %>%
-  full_join(intervals) %>%
-  mutate(gm.trt = factor(gm.trt, levels = c( "weeded", "ambient")),
-         id = factor(id))
-
 #####################################################################
 # Anet - Tri
 #####################################################################
-anet_tri <- gam(anet ~ gm.trt + s(doy, k = 4) +
-                  s(doy, by = gm.trt, k = 4) +
-                  s(id,  bs = "re"),
-                data = subset(photo_traits, spp == "Tri" & anet > 0))
+anet_tri <- lmer(anet ~ gm.trt * doy + (1 | plot) + (1 | id),
+                data = subset(photo_traits, spp == "Tri" & anet > 0 & plot != 3))
 
 # Check model assumptions
 plot(anet_tri)
@@ -144,29 +44,30 @@ shapiro.test(residuals(anet_tri))
 outlierTest(anet_tri)
 
 # Model output
-summary(anet_tri_gam)
+summary(anet_tri)
 Anova(anet_tri)
 r.squaredGLMM(anet_tri)
 
 # Pairwise comparisons
-test(emtrends(anet_tri_gam, pairwise~gm.trt, "doy"))
+test(emtrends(anet_tri, pairwise~gm.trt, "doy"))
 # Weeded treatment exhibits stronger reduction in Trillium Anet as
 # growing season progresses
 
 # Plot prep
 anet_tri_results <- data.frame(
-  emmeans(anet_tri_gam, ~gm.trt, "doy", at = list(doy = seq(100, 170, 1))))
+  emmeans(anet_tri, ~gm.trt, "doy", at = list(doy = seq(100, 170, 1)),
+          type = "response"))
 
 # Plot
 anet_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.trt)), 
                          aes(x = doy, y = anet, fill = gm.trt)) +
-  geom_line(aes(group = id), alpha = 0.1) +
-  geom_point(size = 2.5, shape = 21) +
+  geom_line(aes(group = id), alpha = 0.05) +
+  geom_point(size = 2.5, shape = 21, alpha = 0.2) +
   geom_smooth(data = anet_tri_results,
-              aes(x = doy, y = emmean, color = gm.trt),
+              aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = anet_tri_results,
-              aes(x = doy, y = emmean, ymin = lower.CL, 
+              aes(x = doy, y = response, ymin = lower.CL, 
                   ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
@@ -186,12 +87,10 @@ anet_tri_plot
 #####################################################################
 # Anet - Mai
 #####################################################################
-photo_traits$anet[c(110)] <- NA
+photo_traits$anet[c(19, 42, 235, 455, 760)] <- NA
 
-anet_mai <- gam(anet ~ gm.trt + s(doy, k = 4) +
-                  s(doy, by = gm.trt, k = 4) +
-                  s(id, plot, bs = "re"),
-                data = subset(photo_traits, spp == "Mai" & anet > 0))
+anet_mai <- lmer(log(anet) ~ gm.trt * doy + (1 | plot) + (1 | id),
+                 data = subset(photo_traits, spp == "Mai" & anet > 0))
 
 # Check model assumptions
 plot(anet_mai)
@@ -207,6 +106,8 @@ Anova(anet_mai)
 r.squaredGLMM(anet_mai)
 
 # Pairwise comparisons
+emmeans(anet_mai, pairwise~gm.trt)
+
 test(emtrends(anet_mai, pairwise~gm.trt, "doy"))
 # Ambient treatment exhibits stronger reduction in Trillium Anet as
 # growing season progresses
@@ -224,13 +125,13 @@ anet_mai_results <- data.frame(
 anet_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & 
                                         !is.na(gm.trt) & anet > 0), 
                         aes(x = doy, y = anet, fill = gm.trt)) +
-  geom_line(aes(group = id), alpha = 0.1) +
-  geom_point(size = 2.5, shape = 21) +
+  geom_line(aes(group = id), alpha = 0.05) +
+  geom_point(size = 2.5, shape = 21, alpha = 0.2) +
   geom_smooth(data = anet_mai_results,
-              aes(x = doy, y = emmean, color = gm.trt),
+              aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = anet_mai_results,
-              aes(x = doy, y = emmean, ymin = lower.CL, 
+              aes(x = doy, y = response, ymin = lower.CL, 
                   ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
@@ -257,12 +158,10 @@ anet_mai_plot
 #####################################################################
 # Vcmax25 - Tri
 #####################################################################
-photo_traits$vcmax25[c(281, 296, 452)] <- NA
+photo_traits$vcmax25[c(27, 304, 554)] <- NA
 
-vcmax25_tri <- gam(vcmax25 ~ gm.trt + s(doy, k = 4) +
-                     s(doy, by = gm.trt, k = 4) +
-                     s(id, plot, bs = "re"),
-                   data = subset(photo_traits, spp == "Tri" & anet > 0))
+vcmax25_tri <- lmer(log(vcmax25) ~ gm.trt * doy + (1 | plot) + (1 | id),
+                 data = subset(photo_traits, spp == "Tri" & anet > 0))
 
 # Check model assumptions
 plot(vcmax25_tri)
@@ -298,13 +197,13 @@ vcmax25_tri_results <- data.frame(
 # Plot
 vcmax25_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.trt)), 
                          aes(x = doy, y = vcmax25, fill = gm.trt)) +
-  geom_line(aes(group = id), alpha = 0.1) +
-  geom_point(size = 2.5, shape = 21, alpha = 0.7) +
+  geom_line(aes(group = id), alpha = 0.05) +
+  geom_point(size = 2.5, shape = 21, alpha = 0.2) +
   geom_smooth(data = vcmax25_tri_results,
-              aes(x = doy, y = emmean, color = gm.trt),
+              aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = vcmax25_tri_results,
-              aes(x = doy, y = emmean, ymin = lower.CL, 
+              aes(x = doy, y = response, ymin = lower.CL, 
                   ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
@@ -324,45 +223,12 @@ vcmax25_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.
 vcmax25_tri_plot
 
 #####################################################################
-# Vcmax25 - Tri including size classes (number_interval to keep number
-# of reps within each class the same)
-#####################################################################
-vcmax25_tri_numbInt <- lmer(
-  log(vcmax25) ~ gm.trt * doy * number_interval + (1|id), 
-  data = subset(photo_traits, spp == "Tri"))
-
-# Check model assumptions
-plot(vcmax25_tri_numbInt)
-qqnorm(residuals(vcmax25_tri_numbInt))
-qqline(residuals(vcmax25_tri_numbInt))
-densityPlot(residuals(vcmax25_tri_numbInt))
-shapiro.test(residuals(vcmax25_tri_numbInt))
-outlierTest(vcmax25_tri_numbInt)
-
-# Model output
-summary(vcmax25_tri_numbInt)
-Anova(vcmax25_tri_numbInt)
-r.squaredGLMM(vcmax25_tri_numbInt)
-
-# Pairwise comparisons
-test(emtrends(vcmax25_tri_numbInt, pairwise~gm.trt, "doy"))
-## Slope that explains doy-vcmax25 relationship is significantly more 
-## negative in weeded treatment than ambient treatment
-
-emmeans(vcmax25_tri_numbInt, pairwise~gm.trt, "doy", at = list(doy = seq(105, 230, 5)))
-
-cld(emmeans(vcmax25_tri_numbInt, pairwise~gm.trt|number_interval))
-# Vcmax25 is greater in ambient plots, but only in lowest size class
-
-#####################################################################
 # Vcmax25 - Mai
 #####################################################################
-photo_traits$vcmax25[c(95, 99, 123)] <- NA
+photo_traits$vcmax25[c(23, 88, 155, 362, 720)] <- NA
 
-vcmax25_mai <- gam(vcmax25 ~ gm.trt + s(doy, k = 3) +
-                     s(doy, by = gm.trt, k = 3) +
-                     s(id, plot, bs = "re"),
-                   data = subset(photo_traits, spp == "Mai" & anet > 0))
+vcmax25_mai <- lmer(log(vcmax25) ~ gm.trt * doy + (1 | plot) + (1 | id),
+                    data = subset(photo_traits, spp == "Mai" & ci > 0))
 
 # Check model assumptions
 plot(vcmax25_mai)
@@ -395,13 +261,13 @@ vcmax25_mai_results <- data.frame(
 # Plot
 vcmax25_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.trt)), 
                          aes(x = doy, y = vcmax25, fill = gm.trt)) +
-  geom_line(aes(group = id), alpha = 0.1) +
-  geom_point(size = 2.5, shape = 21, alpha = 0.7) +
+  geom_line(aes(group = id), alpha = 0.05) +
+  geom_point(size = 2.5, shape = 21, alpha = 0.2) +
   geom_smooth(data = vcmax25_mai_results,
-              aes(x = doy, y = emmean, color = gm.trt),
+              aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
   geom_ribbon(data = vcmax25_mai_results,
-              aes(x = doy, y = emmean, ymin = lower.CL, 
+              aes(x = doy, y = response, ymin = lower.CL, 
                   ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
   scale_fill_manual(values = gm.colors) +
   scale_color_manual(values = gm.colors) +
@@ -421,42 +287,9 @@ vcmax25_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.
 vcmax25_mai_plot
 
 #####################################################################
-# Vcmax25 - Mai including size classes (number_interval to keep number
-# of reps within each class the same)
-#####################################################################
-photo_traits$vcmax25[c(99,122)] <- NA
-
-vcmax25_mai_numbInt <- lmer(
-  log(vcmax25) ~ gm.trt * doy * number_interval + (1|id), 
-  data = subset(photo_traits, spp == "Mai"))
-
-# Check model assumptions
-plot(vcmax25_mai_numbInt)
-qqnorm(residuals(vcmax25_mai_numbInt))
-qqline(residuals(vcmax25_mai_numbInt))
-densityPlot(residuals(vcmax25_mai_numbInt))
-shapiro.test(residuals(vcmax25_mai_numbInt))
-outlierTest(vcmax25_mai_numbInt)
-
-# Model output
-summary(vcmax25_mai_numbInt)
-Anova(vcmax25_mai_numbInt)
-r.squaredGLMM(vcmax25_mai_numbInt)
-
-# Pairwise comparisons
-test(emtrends(vcmax25_mai_numbInt, ~gm.trt, "doy"))
-## Reductions in Vcmax25 across the growing season are significantly
-## greater in the ambient treatment
-
-cld(emtrends(vcmax25_mai_numbInt, ~gm.trt|number_interval, "doy"))
-## Stronger Vcmax25 reductions across growing season in ambient
-## treatment are driven by 554-673cm2 and 673-1120cm2 size classes
-## (i.e., GM treatment more strongly influences larger Mai)
-
-#####################################################################
 # Jmax25 - Tri
 #####################################################################
-photo_traits$jmax25[c(281, 296, 452)] <- NA
+photo_traits$jmax25[c(27, 304, 554)] <- NA
 
 jmax25_tri <- lmer(log(jmax25) ~ gm.trt * doy + (1 | id) + (1 | plot), 
                    data = subset(photo_traits, spp == "Tri"))
@@ -493,8 +326,8 @@ jmax25_tri_results <- data.frame(
 # Plot
 jmax25_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.trt)), 
                         aes(x = doy, y = jmax25, fill = gm.trt)) +
-  geom_line(aes(group = id), alpha = 0.1) +
-  geom_point(size = 2.5, shape = 21, alpha = 0.7) +
+  geom_line(aes(group = id), alpha = 0.05) +
+  geom_point(size = 2.5, shape = 21, alpha = 0.2) +
   geom_smooth(data = jmax25_tri_results,
               aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
@@ -518,34 +351,10 @@ jmax25_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.t
 jmax25_tri_plot
 
 #####################################################################
-# Jmax25 - Tri including size classes (number_interval to keep number
-# of reps within each class the same)
-#####################################################################
-jmax25_tri_numbInt <- lmer(
-  log(jmax25) ~ gm.trt * doy * number_interval + (1|id), 
-  data = subset(photo_traits, spp == "Tri"))
-
-# Check model assumptions
-plot(jmax25_tri_numbInt)
-qqnorm(residuals(jmax25_tri_numbInt))
-qqline(residuals(jmax25_tri_numbInt))
-densityPlot(residuals(jmax25_tri_numbInt))
-shapiro.test(residuals(jmax25_tri_numbInt))
-outlierTest(jmax25_tri_numbInt)
-
-# Model output
-summary(jmax25_tri_numbInt)
-Anova(jmax25_tri_numbInt)
-r.squaredGLMM(jmax25_tri_numbInt)
-
-# Pairwise comparisons
-test(emtrends(jmax25_tri_numbInt, pairwise~gm.trt, "doy"))
-## Reductions in Jmax25 across the growing season are stronger
-## in weeded treatment
-
-#####################################################################
 # Jmax25 - Mai
 #####################################################################
+
+
 jmax25_mai <- lmer(log(jmax25) ~ gm.trt * doy + (1|id) + (1 | plot), 
                    data = subset(photo_traits, spp == "Mai" & ci > 0))
 
@@ -582,8 +391,8 @@ jmax25_mai_results <- data.frame(
 # Plot
 jmax25_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.trt)), 
                           aes(x = doy, y = jmax25, fill = gm.trt)) +
-  geom_line(aes(group = id), alpha = 0.1) +
-  geom_point(size = 2.5, shape = 21, alpha = 0.7) +
+  geom_line(aes(group = id), alpha = 0.05) +
+  geom_point(size = 2.5, shape = 21, alpha = 0.2) +
   geom_smooth(data = jmax25_mai_results,
               aes(x = doy, y = response, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
@@ -608,38 +417,10 @@ jmax25_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.t
 jmax25_mai_plot
 
 #####################################################################
-# Jmax25 - Mai including size classes (number_interval to keep number
-# of reps within each class the same)
-#####################################################################
-jmax25_mai_numbInt <- lmer(
-  log(jmax25) ~ gm.trt * doy * number_interval + (1|id), 
-  data = subset(photo_traits, spp == "Mai"))
-
-# Check model assumptions
-plot(jmax25_mai_numbInt)
-qqnorm(residuals(jmax25_mai_numbInt))
-qqline(residuals(jmax25_mai_numbInt))
-densityPlot(residuals(jmax25_mai_numbInt))
-shapiro.test(residuals(jmax25_mai_numbInt))
-outlierTest(jmax25_mai_numbInt)
-
-# Model output
-summary(jmax25_mai_numbInt)
-Anova(jmax25_mai_numbInt)
-r.squaredGLMM(jmax25_mai_numbInt)
-
-# Pairwise comparisons
-test(emtrends(jmax25_mai_numbInt, pairwise~gm.trt, "doy"))
-## Reductions in Jmax25 across the growing season are similar
-## between gm treatments
-
-cld(emtrends(jmax25_mai_numbInt, ~gm.trt|number_interval, "doy"))
-## Jmax25 reductions across growing season are stronger in ambient
-## treatment in larger size classes
-
-#####################################################################
 # Ci - Tri ignoring size classes
 #####################################################################
+photo_traits$ci[c(77, 261)] <- NA
+
 ci_tri <- lmer(ci ~ gm.trt * doy + (1|id) + (1 | plot), 
                data = subset(photo_traits, spp == "Tri" & ci > 0))
 
@@ -667,8 +448,8 @@ ci_tri_results <- data.frame(
 # Plot
 ci_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.trt) & ci > 0), 
                       aes(x = doy, y = ci, fill = gm.trt)) +
-  geom_line(aes(group = id), alpha = 0.1) +
-  geom_point(size = 2.5, shape = 21, alpha = 0.7) +
+  geom_line(aes(group = id), alpha = 0.05) +
+  geom_point(size = 2.5, shape = 21, alpha = 0.2) +
   geom_smooth(data = ci_tri_results,
               aes(x = doy, y = emmean, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
@@ -694,11 +475,10 @@ ci_tri_plot
 #####################################################################
 # Ci - Mai ignoring size classes
 #####################################################################
-photo_traits$ci[c(367, 392, 790, 791, 820)] <- NA
-photo_traits$ci[c(171, 393, 450, 850)] <- NA
+photo_traits$ci[c(13, 82, 183, 324, 455, 722)] <- NA
 
 ci_mai <- lmer(ci ~ gm.trt * doy + (1 | id) + (1 | plot), 
-               data = subset(photo_traits, spp == "Mai" & ci > 0))
+               data = subset(photo_traits, spp == "Mai" & ci > 100))
 
 # Check model assumptions
 plot(ci_mai)
@@ -720,8 +500,8 @@ ci_mai_results <- data.frame(
 # Plot
 ci_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.trt) & ci > 0), 
                           aes(x = doy, y = ci, fill = gm.trt)) +
-  geom_line(aes(group = id), alpha = 0.1) +
-  geom_point(size = 2.5, shape = 21, alpha = 0.7) +
+  geom_line(aes(group = id), alpha = 0.05) +
+  geom_point(size = 2.5, shape = 21, alpha = 0.2) +
   geom_smooth(data = ci_mai_results,
               aes(x = doy, y = emmean, color = gm.trt),
               se = FALSE, linewidth = 1.5) +
@@ -745,15 +525,335 @@ ci_mai_plot <- ggplot(data = subset(photo_traits, spp == "Mai" & !is.na(gm.trt) 
         panel.grid.minor.y = element_blank())
 ci_mai_plot
 
+#####################################################################
+# Ci:Ca - Tri ignoring size classes
+#####################################################################
+cica_tri <- lmer(ci.ca ~ gm.trt * doy + (1|id) + (1 | plot), 
+               data = subset(photo_traits, spp == "Tri" & ci.ca < 1))
+
+# Check model assumptions
+plot(cica_tri)
+qqnorm(residuals(cica_tri))
+qqline(residuals(cica_tri))
+densityPlot(residuals(cica_tri))
+shapiro.test(residuals(cica_tri))
+outlierTest(cica_tri)
+
+# Model output
+summary(cica_tri)
+Anova(cica_tri)
+r.squaredGLMM(cica_tri)
+
+# Pairwise comparisons
+test(emtrends(cica_tri, pairwise~gm.trt, "doy"))
+## Stronger positive effect of DOY in weeded treatment
+
+# Plot prep
+cica_tri_results <- data.frame(
+  emmeans(cica_tri, ~gm.trt, "doy", at = list(doy = seq(100, 170, 1))))
+
+# Plot
+cica_tri_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.trt) & ci > 0), 
+                      aes(x = doy, y = ci.ca, fill = gm.trt)) +
+  geom_line(aes(group = id), alpha = 0.05) +
+  geom_point(size = 2.5, shape = 21, alpha = 0.2) +
+  geom_smooth(data = cica_tri_results,
+              aes(x = doy, y = emmean, color = gm.trt),
+              se = FALSE, linewidth = 1.5) +
+  geom_ribbon(data = cica_tri_results,
+              aes(x = doy, y = emmean, ymin = lower.CL, 
+                  ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
+  scale_fill_manual(values = gm.colors) +
+  scale_color_manual(values = gm.colors) +
+  scale_y_continuous(limits = c(0.4, 1), breaks = seq(0.4, 1, 0.2)) +
+  labs(x = "Day of year",
+       y = expression(bold("C"["i"]*":C"["a"]*" (unitless)")),
+       fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
+       color = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "italic"),
+        panel.grid.minor.y = element_blank())
+cica_tri_plot
+
+
+#####################################################################
+# Ci:Ca - Tri ignoring size classes
+#####################################################################
+photo_traits$ci.ca[c(462)] <- NA
+
+cica_mai <- lmer(ci.ca ~ gm.trt * doy + (1|id) + (1 | plot), 
+                 data = subset(photo_traits, spp == "Mai" & ci > 100 & ci.ca < 1))
+
+# Check model assumptions
+plot(cica_mai)
+qqnorm(residuals(cica_mai))
+qqline(residuals(cica_mai))
+densityPlot(residuals(cica_mai))
+shapiro.test(residuals(cica_mai))
+outlierTest(cica_mai)
+
+# Model output
+summary(cica_mai)
+Anova(cica_mai)
+r.squaredGLMM(cica_mai)
+
+# Pairwise comparisons
+test(emtrends(cica_mai, pairwise~gm.trt, "doy"))
+## Stronger positive effect of DOY in weeded treatment
+
+# Plot prep
+cica_mai_results <- data.frame(
+  emmeans(cica_mai, ~gm.trt, "doy", at = list(doy = seq(100, 170, 1))))
+
+# Plot
+cica_mai_plot <- ggplot(data = subset(photo_traits, spp == "Tri" & !is.na(gm.trt) & ci > 0), 
+                        aes(x = doy, y = ci.ca, fill = gm.trt)) +
+  geom_line(aes(group = id), alpha = 0.05) +
+  geom_point(size = 2.5, shape = 21, alpha = 0.2) +
+  geom_smooth(data = cica_mai_results,
+              aes(x = doy, y = emmean, color = gm.trt),
+              se = FALSE, linewidth = 1.5) +
+  geom_ribbon(data = cica_mai_results,
+              aes(x = doy, y = emmean, ymin = lower.CL, 
+                  ymax = upper.CL, fill = gm.trt), alpha = 0.25) +
+  scale_fill_manual(values = gm.colors) +
+  scale_color_manual(values = gm.colors) +
+  scale_y_continuous(limits = c(0.4, 1), breaks = seq(0.4, 1, 0.2)) +
+  labs(x = "Day of year",
+       y = expression(bold("C"["i"]*":C"["a"]*" (unitless)")),
+       fill = expression(bolditalic("A. petiolata")*bold(" treatment")),
+       color = expression(bolditalic("A. petiolata")*bold(" treatment"))) +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "italic"),
+        panel.grid.minor.y = element_blank())
+cica_mai_plot
+
+#####################################################################
+# Total net C gain (gC/m2/yr) - Trillium
+#####################################################################
+cbudget$total_netc_assim[c(24, 71)] <- NA
+
+netCgain_tri <- lmer(total_netc_assim ~ gm.trt + (1 | plot), 
+                     data = subset(cbudget, spp == "Tri" & n_meas > 2))
+
+
+# Check model assumptions
+plot(netCgain_tri)
+qqnorm(residuals(netCgain_tri))
+qqline(residuals(netCgain_tri))
+densityPlot(residuals(netCgain_tri))
+shapiro.test(residuals(netCgain_tri))
+outlierTest(netCgain_tri)
+
+# Model output
+summary(netCgain_tri)
+Anova(netCgain_tri)
+r.squaredGLMM(netCgain_tri)
+
+# Post-hoc comparisons
+emmeans(netCgain_tri, pairwise~gm.trt)
+
+# Plot prep
+netCgain_tri_prep <- cld(emmeans(netCgain_tri, pairwise~gm.trt), Letters = LETTERS,
+                         reversed = TRUE) %>%
+  mutate(.group = trimws(.group, "both"))
+
+# Plot
+netCgain_tri_plot <- ggplot(data = subset(cbudget, spp == "Tri" & n_meas > 1),
+                               aes(x = gm.trt, y = total_netc_assim, fill = gm.trt)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, alpha = 0.3, size = 3, shape = 21) +
+  geom_text(data = netCgain_tri_prep, 
+            aes(label = .group, y = 300),
+            size = 6, fontface = "bold") +
+  scale_y_continuous(limits = c(150, 300), breaks = seq(150, 300, 50)) +
+  scale_fill_manual(values = gm.colors) +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
+       y = expression(bold("Total C gain (gC m"^"-2"*" yr"^"-1"*")"))) +
+  guides(fill = "none") +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(hjust = 0),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "bold.italic", size = 18),
+        panel.grid.minor.y = element_blank(),
+        axis.title.x = element_text(color = "white"))
+
+####################################################################
+# Total net C gain (gC/m2/yr) - Maianthemum
+#####################################################################
+cbudget$total_netc_assim[c(32)] <- NA
+
+netCgain_mai <- lmer(log(total_netc_assim) ~ gm.trt + (1 | plot), 
+                     data = subset(cbudget, spp == "Mai" & n_meas > 2))
+
+
+# Check model assumptions
+plot(netCgain_mai)
+qqnorm(residuals(netCgain_mai))
+qqline(residuals(netCgain_mai))
+densityPlot(residuals(netCgain_mai))
+shapiro.test(residuals(netCgain_mai))
+outlierTest(netCgain_mai)
+
+# Model output
+summary(netCgain_mai)
+Anova(netCgain_mai)
+r.squaredGLMM(netCgain_mai)
+
+# Plot prep
+netCgain_mai_prep <- cld(emmeans(netCgain_mai, pairwise~gm.trt), Letters = LETTERS,
+                         reversed = TRUE) %>%
+  mutate(.group = trimws(.group, "both"))
+
+# Plot
+netCgain_mai_plot <- ggplot(data = subset(cbudget, spp == "Mai" & n_meas > 1),
+                            aes(x = gm.trt, y = total_netc_assim, fill = gm.trt)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, alpha = 0.3, size = 3, shape = 21) +
+  geom_text(data = netCgain_mai_prep, 
+            aes(label = .group, y = 300),
+            size = 6, fontface = "bold") +
+  scale_y_continuous(limits = c(150, 300), breaks = seq(150, 300, 50)) +
+  scale_fill_manual(values = gm.colors) +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
+       y = expression(bold("Total C gain (gC m"^"-2"*" yr"^"-1"*")"))) +
+  guides(fill = "none") +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(hjust = 0),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "bold.italic", size = 18),
+        panel.grid.minor.y = element_blank(),
+        axis.title.x = element_text(color = "white"))
+
+#####################################################################
+# Total net C gain (gC/yr) - Trillium
+#####################################################################
+cbudget$total_netc_assim_tla[c(46)] <- NA
+
+netCgainTLA_tri <- lmer(total_netc_assim_tla ~ gm.trt + (1 | plot), 
+                        data = subset(cbudget, spp == "Tri" & n_meas > 2 & plot != 3))
+
+
+# Check model assumptions
+plot(netCgainTLA_tri)
+qqnorm(residuals(netCgainTLA_tri))
+qqline(residuals(netCgainTLA_tri))
+densityPlot(residuals(netCgainTLA_tri))
+shapiro.test(residuals(netCgainTLA_tri))
+outlierTest(netCgainTLA_tri)
+
+# Model output
+summary(netCgainTLA_tri)
+Anova(netCgainTLA_tri)
+r.squaredGLMM(netCgainTLA_tri)
+
+# Plot prep
+netCgainTLA_tri_prep <- cld(emmeans(netCgainTLA_tri, pairwise~gm.trt), Letters = LETTERS) %>%
+  mutate(.group = trimws(.group, "both"))
+
+# Plot
+netCgainTLA_tri_plot <- ggplot(data = subset(cbudget, spp == "Tri" & n_meas > 2 & plot != 3),
+                               aes(x = gm.trt, y = total_netc_assim_tla, fill = gm.trt)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, alpha = 0.3, size = 3, shape = 21) +
+  geom_text(data = netCgainTLA_tri_prep, 
+            aes(label = .group, y = 30),
+            size = 6, fontface = "bold") +
+  scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, 10)) +
+  scale_fill_manual(values = gm.colors) +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
+       y = expression(bold("Total C gain (gC yr"^"-1"*")"))) +
+  guides(fill = "none") +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(hjust = 0),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "bold.italic", size = 18),
+        panel.grid.minor.y = element_blank(),
+        axis.title.x = element_text(color = "white"))
+
+#####################################################################
+# Total net C gain (gC/yr) - Trillium
+#####################################################################
+cbudget$total_netc_assim_tla[c(46, 173)] <- NA
+
+netCgainTLA_mai <- lmer(total_netc_assim_tla ~ gm.trt + (1 | plot), 
+                        data = subset(cbudget, spp == "Mai" & n_meas > 3))
+
+
+# Check model assumptions
+plot(netCgainTLA_mai)
+qqnorm(residuals(netCgainTLA_mai))
+qqline(residuals(netCgainTLA_mai))
+densityPlot(residuals(netCgainTLA_mai))
+shapiro.test(residuals(netCgainTLA_mai))
+outlierTest(netCgainTLA_mai)
+
+# Model output
+summary(netCgainTLA_mai)
+Anova(netCgainTLA_mai)
+r.squaredGLMM(netCgainTLA_mai)
+
+# Pairwise comparisons
+emmeans(netCgainTLA_mai, pairwise~gm.trt)
+
+# Plot prep
+netCgainTLA_mai_prep <- cld(emmeans(netCgainTLA_mai, pairwise~gm.trt), 
+                            Letters = LETTERS, reversed = TRUE) %>%
+  mutate(.group = trimws(.group, "both"))
+
+# Plot
+netCgainTLA_mai_plot <- ggplot(data = subset(cbudget, spp == "Mai" & n_meas > 1),
+                        aes(x = gm.trt, y = total_netc_assim_tla, fill = gm.trt)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, alpha = 0.3, size = 3, shape = 21) +
+  geom_text(data = netCgainTLA_mai_prep, 
+            aes(label = .group, y = 30),
+            size = 6, fontface = "bold") +
+  scale_y_continuous(limits = c(0, 30), breaks = seq(0, 30, 10)) +
+  scale_fill_manual(values = gm.colors) +
+  facet_grid(~spp, labeller = labeller(spp = facet.labs)) +
+  labs(x = expression(bolditalic("Alliaria")*bold(" treatment")),
+       y = expression(bold("Total C gain (gC yr"^"-1"*")"))) +
+  guides(fill = "none") +
+  theme_classic(base_size = 18) +
+  theme(axis.title = element_text(face = "bold"),
+        legend.title = element_text(face = "bold"),
+        legend.text = element_text(hjust = 0),
+        strip.background = element_blank(),
+        strip.text = element_text(face = "bold.italic", size = 18),
+        panel.grid.minor.y = element_blank(),
+        axis.title.x = element_text(color = "white"))
 
 #####################################################################
 # Compile plots
 #####################################################################
 png("../drafts/figs/TT24_temp_standardized_vcmax_jmax.png", 
     width = 16, height = 10, units = "in", res = 600)
-ggarrange(vcmax25_tri_plot, jmax25_tri_plot, ci_tri_plot,
-          vcmax25_mai_plot, jmax25_mai_plot, ci_mai_plot,
+ggarrange(vcmax25_tri_plot, jmax25_tri_plot, cica_tri_plot,
+          vcmax25_mai_plot, jmax25_mai_plot, cica_mai_plot,
           nrow = 2, ncol = 3, common.legend = TRUE, legend = "bottom")
 dev.off()
 
-
+png("../drafts/figs/TT24_cbudget.png", 
+    width = 8, height = 10, units = "in", res = 600)
+ggarrange(netCgain_tri_plot, netCgain_mai_plot,
+          netCgainTLA_tri_plot, netCgainTLA_mai_plot,
+          nrow = 2, ncol = 2, common.legend = TRUE, legend = "bottom")
+dev.off()
