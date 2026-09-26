@@ -17,8 +17,9 @@ library(zoo) ## for running mean fxn
 
 # Read .csv for weather station data
 weather <- read.csv("../data/TT24_weather_station_data.csv") %>%
-  mutate(par_umol_m2_s = Rg.to.PPFD(solar_radiation_wm2)) %>%
-  dplyr::select(date, doy, solar_radiation_wm2, par_umol_m2_s, 
+  mutate(par_umol_m2_s = Rg.to.PPFD(solar_radiation_wm2),
+         daytime = par_umol_m2_s > 0) %>%
+  dplyr::select(date, doy, daytime, solar_radiation_wm2, par_umol_m2_s, 
                 precipitation_mm, 
                 wind_direction_degrees:atm_pressure_kpa, 
                 rh_sensor_temp, vpd_kpa)
@@ -37,6 +38,7 @@ weather_dailymean <- weather %>%
   summarize(precip_total = sum(precipitation_mm, na.rm = TRUE),
             par_mean = mean(par_umol_m2_s, na.rm = TRUE),
             par_max = max(par_umol_m2_s, na.rm = TRUE),
+            par_mean_day = mean(par_umol_m2_s[daytime], na.rm = TRUE),
             airtemp_mean = mean(air_temperature_c),
             airtemp_max = max(air_temperature_c, na.rm = TRUE),
             vaporpressure_mean = mean(vapor_pressure_kpa, na.rm = TRUE),
@@ -48,6 +50,8 @@ weather_dailymean$parmax10 <- rollmean(x = weather_dailymean$par_max, k = 10,
                                      fill = NA, align = "right")
 weather_dailymean$paravg10 <- rollmean(x = weather_dailymean$par_mean, k = 10,
                                        fill = NA, align = "right")
+weather_dailymean$paravg10_day <- rollmean(x = weather_dailymean$par_mean_day, k = 10,
+                                           fill = NA, align = "right")
 weather_dailymean$tavg10 <- rollmean(x = weather_dailymean$airtemp_mean, k = 10,
                                      fill = NA, align = "right")
 weather_dailymean$tmax10 <- rollmean(x = weather_dailymean$airtemp_max, k = 10,
@@ -67,6 +71,7 @@ write.csv(weather_dailymean,
 # visualize rolling mean values
 hist(weather_dailymean$parmax10)
 hist(weather_dailymean$paravg10)
+hist(weather_dailymean$paravg10_day)
 hist(weather_dailymean$tavg10)
 hist(weather_dailymean$tmax10)
 hist(weather_dailymean$vp10)
@@ -75,7 +80,7 @@ hist(weather_dailymean$vpd10)
 
 # Visualize a few patterns
 ggplot(data = subset(weather_dailymean, doy > 100 & doy < 250), 
-       aes(x = doy, y = par10)) +
+       aes(x = doy, y = paravg10)) +
   geom_line(linewidth = 2) +
   scale_y_continuous(limits = c(0, 300), breaks = seq(0, 300, 100)) +
   labs(x = "Day of Year", 
